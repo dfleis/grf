@@ -95,6 +95,11 @@
 #'                      be at least 2. Default is 2. (Confidence intervals are
 #'                      currently only supported for univariate outcomes Y).
 #' @param compute.oob.predictions Whether OOB predictions on training set should be precomputed. Default is TRUE.
+#' @param method Character string specifying the pseudo-outcome calculation method: "grad" specifies pseudo-outcomes obtained
+#' via the original gradient tree algorithm, "fp1" specifies pseudo-outcomes obtained via the exact fixed-point tree algorithm,
+#' "fp2" specifies pseudo-outcomes obtained via the approximate fixed-point tree algorithm. Details regarding the fixed-point
+#' tree algorithm, alongside the exact and approximate implementations designed for heterogeneous treatment effect estimation,
+#' can be found at https://arxiv.org/abs/2306.11908.
 #' @param num.threads Number of threads used in training. By default, the number of threads is set
 #'                    to the maximum hardware concurrency.
 #' @param seed The seed of the C++ random number generator.
@@ -184,6 +189,7 @@ multi_arm_causal_forest <- function(X, Y, W,
                                     stabilize.splits = TRUE,
                                     ci.group.size = 2,
                                     compute.oob.predictions = TRUE,
+                                    method = c("grad", "fp1", "fp2"),
                                     num.threads = NULL,
                                     seed = runif(1, 0, .Machine$integer.max)) {
   has.missing.values <- validate_X(X, allow.na = TRUE)
@@ -207,6 +213,8 @@ multi_arm_causal_forest <- function(X, Y, W,
   if (nlevels(W) != nlevels(droplevels(W))) {
     warning("The treatment vector W contains unused levels (see `droplevels()` to drop unused levels).")
   }
+  method <- match.arg(method, choices = c("grad", "fp1", "fp2"))
+  method.flag <- switch(method, "grad" = 1, "fp1" = 2, "fp2" = 3)
 
   args.orthog <- list(X = X,
                       num.trees = max(50, num.trees / 4),
@@ -283,10 +291,12 @@ multi_arm_causal_forest <- function(X, Y, W,
                stabilize.splits = stabilize.splits,
                ci.group.size = ci.group.size,
                compute.oob.predictions = compute.oob.predictions,
+               method = method.flag,
                num.threads = num.threads,
                seed = seed)
 
   forest <- do.call.rcpp(multi_causal_train, c(data, args))
+
   class(forest) <- c("multi_arm_causal_forest", "grf")
   forest[["seed"]] <- seed
   forest[["ci.group.size"]] <- ci.group.size
@@ -299,6 +309,7 @@ multi_arm_causal_forest <- function(X, Y, W,
   forest[["equalize.cluster.weights"]] <- equalize.cluster.weights
   forest[["sample.weights"]] <- sample.weights
   forest[["has.missing.values"]] <- has.missing.values
+  forest[["method"]] <- method
 
   forest
 }

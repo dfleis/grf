@@ -3,3 +3,7 @@
 
 # vscode files
 .vscode/
+
+# tests while building the fixed-point implementation
+tests-fp/
+

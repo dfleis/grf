@@ -29,6 +29,14 @@ ForestTrainer multi_causal_trainer(size_t num_treatments,
                                    size_t num_outcomes,
                                    bool stabilize_splits,
                                    const std::vector<double>& gradient_weights = {});
+ForestTrainer multi_causal_trainerFP1(size_t num_treatments,
+                                      size_t num_outcomes,
+                                      bool stabilize_splits,
+                                      const std::vector<double>& gradient_weights = {});
+ForestTrainer multi_causal_trainerFP2(size_t num_treatments,
+                                      size_t num_outcomes,
+                                      bool stabilize_splits,
+                                      const std::vector<double>& gradient_weights = {});
 
 ForestTrainer quantile_trainer(const std::vector<double>& quantiles);
 

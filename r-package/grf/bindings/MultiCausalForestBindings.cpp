@@ -46,11 +46,40 @@ Rcpp::List multi_causal_train(const Rcpp::NumericMatrix& train_matrix,
                               std::vector<size_t> clusters,
                               unsigned int samples_per_cluster,
                               bool compute_oob_predictions,
+                              int method_flag,
                               unsigned int num_threads,
                               unsigned int seed) {
   size_t num_treatments = treatment_index.size();
   size_t num_outcomes = outcome_index.size();
+  /**
+   * TO DO for fixed-point implementation (see https://arxiv.org/abs/2306.11908 for details).
+   *  - Multivariate outcomes/response. Be sure to think about the dimensions/indexing
+   *    of the pseudo-outcome indices & how they map onto the multivariate treatments
+   *    and multivariate outcomes.
+   *  - Is the 'gradient_weights' vector relevant for the fixed-point algorithms?
+   *  - Surely there's a more elegant way of implementing the choice of the three methods
+   *    than this 'switch' statement. Can probably implement it deeper down the chain at a
+   *    more elementary level of the C++ code (e.g. check ForestTrainers.h, ForestTrainers.cpp,
+   *    RelabelingStrategy.h, MultiCausalRelabelingStrategy.h, MultiCausalRelabelingStrategy.cpp,
+   *    possibly ForestOptions/TreeOptions, etc...)
+   *  - Look up the C++ factory pattern to implement the different pseudo-outcome schemes?
+   */
   ForestTrainer trainer = multi_causal_trainer(num_treatments, num_outcomes, stabilize_splits, gradient_weights);
+  // ForestTrainer* trainer = NULL;
+  // switch (method_flag) {
+  // case 1: // method = "fp1", corresponding to the exact fixed-point pseudo-outcomes
+  //   {trainer = new ForestTrainer::multi_causal_trainer(num_treatments, num_outcomes, stabilize_splits, gradient_weights);}
+  //   break;
+  // case 2: // method = "fp2", corresponding to the approximate fixed-point pseudo-outcomes
+  //   {trainer = new ForestTrainer::multi_causal_trainerFP1(num_treatments, num_outcomes, stabilize_splits, gradient_weights);}
+  //   break;
+  // case 3: // (default) method = "grad", corresponding to the original GRF gradient-based pseudo-outcomes
+  //   {trainer = new ForestTrainer::multi_causal_trainerFP2(num_treatments, num_outcomes, stabilize_splits, gradient_weights);}
+  //   break;
+  // default: // TO DO... Set a default as a fail-safe in the event of an unexpected method_flag value?
+  //   {trainer = new ForestTrainer::multi_causal_trainer(num_treatments, num_outcomes, stabilize_splits, gradient_weights);}
+  //   break;
+  // }
 
   Data data = RcppUtilities::convert_data(train_matrix);
   data.set_outcome_index(outcome_index);
