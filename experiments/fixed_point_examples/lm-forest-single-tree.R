@@ -130,7 +130,7 @@ ggplot(df.time.ratio, aes(x = as.factor(K), y = time.ratio, color = method, fill
           subtitle = paste0("One tree, ", nsims, " replications")) +
   scale_y_continuous(limits = c(0, 1.25)) +
   geom_hline(aes(yintercept = hline), col = 'gray50', linewidth = 0.85) +
-  geom_boxplot() +
+  geom_boxplot(outlier.alpha = 0) +
   scale_color_manual(values = pals::brewer.dark2(3)[-1]) +
   scale_fill_manual(values = pals::brewer.pastel2(3)[-1]) +
   theme(legend.position = c(0.0875, 0.2)) +
