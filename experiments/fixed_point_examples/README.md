@@ -8,9 +8,9 @@ The new argument `method` is available for both `multi_arm_causal_forest` and `l
 the forests should be fit using the original gradient-based method (e.g. via the **gradient tree algorithm** of the original grf
 specification) or using methods following the **fixed-point tree algorithm** of https://arxiv.org/abs/2306.11908. For both
 `multi_arm_causal_forest` and `lm_forest` the argument `method` is a character string of the following form
-* `grad`: Original gradient method.
-* `fp1`: Exact fixed-point method.
-* `fp2`: Approximate fixed-point method for heterogeneous treatment effect estimation for multi-dimensional treatments.
+* `method = "grad"`: Original gradient method.
+* `method = "fp1"`: Exact fixed-point method.
+* `method = "fp2"`: Approximate fixed-point method for heterogeneous treatment effect estimation for multi-dimensional treatments.
 
 Figures require the tidyverse collection of packages as well as, ggplot2, ggh4x, pals.
 
