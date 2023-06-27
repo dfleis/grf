@@ -41,9 +41,9 @@ methods <- list("grad" = "grad", "fp1" = "fp1", "fp2" = "fp2")
 #--------------- grid of data-generating parameters
 sig.eps <- 1
 
-Kv <- c(2, 4, 8, 16)           # treatment regressors
-pv <- 2                    # auxiliary covariates
-nv <- c(2500, 5000) # training samples
+Kv <- c(2, 4, 8, 16) # treatment regressors
+pv <- 2              # auxiliary covariates
+nv <- c(2500, 5000)  # training samples
 
 pars.grid <- expand.grid("K" = Kv, "p" = pv, "n" = nv)
 df.list <- vector(mode = "list", length = nrow(pars.grid))
