@@ -58,41 +58,23 @@ ForestTrainer instrumental_trainer(double reduced_form_weight,
 ForestTrainer multi_causal_trainer(size_t num_treatments,
                                    size_t num_outcomes,
                                    bool stabilize_splits,
+                                   int method_flag,
                                    const std::vector<double>& gradient_weights) {
   size_t response_length = num_treatments * num_outcomes;
-  std::unique_ptr<RelabelingStrategy> relabeling_strategy(new MultiCausalRelabelingStrategy(response_length, gradient_weights));
+  std::unique_ptr<RelabelingStrategy> relabeling_strategy;
+  switch (method_flag) {
+  case 1: // method = "grad", original gradient-based pseudo-outcomes for multi-level treatment effects
+    relabeling_strategy = std::unique_ptr<RelabelingStrategy>(new MultiCausalRelabelingStrategy(response_length, gradient_weights));
+    break;
+  case 2: // method = "fp1", exact fixed-point pseudo-outcomes for multi-level treatment effects
+    relabeling_strategy = std::unique_ptr<RelabelingStrategy>(new MultiCausalRelabelingStrategyFP1(response_length, gradient_weights));
+    break;
+  case 3: // method = "fp2", approximate fixed-point pseudo-outcomes for multi-level treatment effects
+    relabeling_strategy = std::unique_ptr<RelabelingStrategy>(new MultiCausalRelabelingStrategyFP2(response_length, gradient_weights));
+    break;
+  }
   std::unique_ptr<SplittingRuleFactory> splitting_rule_factory = stabilize_splits
     ? std::unique_ptr<SplittingRuleFactory>(new MultiCausalSplittingRuleFactory(response_length, num_treatments))
-    : std::unique_ptr<SplittingRuleFactory>(new MultiRegressionSplittingRuleFactory(response_length));
-  std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new MultiCausalPredictionStrategy(num_treatments, num_outcomes));
-
-  return ForestTrainer(std::move(relabeling_strategy),
-                       std::move(splitting_rule_factory),
-                       std::move(prediction_strategy));
-}
-ForestTrainer multi_causal_trainerFP1(size_t num_treatments,
-                                      size_t num_outcomes,
-                                      bool stabilize_splits,
-                                      const std::vector<double>& gradient_weights) {
-  size_t response_length = num_treatments * num_outcomes;
-  std::unique_ptr<RelabelingStrategy> relabeling_strategy(new MultiCausalRelabelingStrategyFP1(response_length, gradient_weights));
-  std::unique_ptr<SplittingRuleFactory> splitting_rule_factory = stabilize_splits
-  ? std::unique_ptr<SplittingRuleFactory>(new MultiCausalSplittingRuleFactory(response_length, num_treatments))
-    : std::unique_ptr<SplittingRuleFactory>(new MultiRegressionSplittingRuleFactory(response_length));
-  std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new MultiCausalPredictionStrategy(num_treatments, num_outcomes));
-
-  return ForestTrainer(std::move(relabeling_strategy),
-                       std::move(splitting_rule_factory),
-                       std::move(prediction_strategy));
-}
-ForestTrainer multi_causal_trainerFP2(size_t num_treatments,
-                                      size_t num_outcomes,
-                                      bool stabilize_splits,
-                                      const std::vector<double>& gradient_weights) {
-  size_t response_length = num_treatments * num_outcomes;
-  std::unique_ptr<RelabelingStrategy> relabeling_strategy(new MultiCausalRelabelingStrategyFP2(response_length, gradient_weights));
-  std::unique_ptr<SplittingRuleFactory> splitting_rule_factory = stabilize_splits
-  ? std::unique_ptr<SplittingRuleFactory>(new MultiCausalSplittingRuleFactory(response_length, num_treatments))
     : std::unique_ptr<SplittingRuleFactory>(new MultiRegressionSplittingRuleFactory(response_length));
   std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new MultiCausalPredictionStrategy(num_treatments, num_outcomes));
 

@@ -87,7 +87,7 @@ bool MultiCausalRelabelingStrategyFP2::relabel(
     size_t j = 0;
     for (size_t outcome = 0; outcome < num_outcomes; outcome++) {
       for (size_t treatment = 0; treatment < num_treatments; treatment++) {
-        responses_by_sample(sample, j) = rho_weight(i, treatment) * residual(i, outcome) * gradient_weights[j];
+        responses_by_sample(sample, j) = W_centered(i, treatment) * residual(i, outcome) * gradient_weights[j];
         j++;
       }
     }

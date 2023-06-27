@@ -26,6 +26,7 @@ lm_forest(
   stabilize.splits = FALSE,
   ci.group.size = 2,
   compute.oob.predictions = TRUE,
+  method = c("grad", "fp1", "fp2"),
   num.threads = NULL,
   seed = runif(1, 0, .Machine$integer.max)
 )
@@ -113,6 +114,12 @@ be at least 2. Default is 2. (Confidence intervals are
 currently only supported for univariate outcomes Y).}
 
 \item{compute.oob.predictions}{Whether OOB predictions on training set should be precomputed. Default is TRUE.}
+
+\item{method}{Character string specifying the pseudo-outcome calculation method: "grad" specifies pseudo-outcomes obtained
+via the original gradient tree algorithm, "fp1" specifies pseudo-outcomes obtained via the exact fixed-point tree algorithm,
+"fp2" specifies pseudo-outcomes obtained via the approximate fixed-point tree algorithm. Details regarding the fixed-point
+tree algorithm, alongside the exact and approximate implementations designed for heterogeneous treatment effect estimation,
+can be found at https://arxiv.org/abs/2306.11908.}
 
 \item{num.threads}{Number of threads used in training. By default, the number of threads is set
 to the maximum hardware concurrency.}
