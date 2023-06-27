@@ -1,4 +1,6 @@
 ##############################################################################################################################
+# WARNING: Takes quite a long time to run the tests over a reasonable variety of parameter settings (n, p, K)
+#
 # Tests comparing the accuracy of the gradient-based method with the two fixed-point methods for heterogeneous effect
 # estimation in the presence of multiple continuous treatment regressors.
 #
@@ -24,12 +26,12 @@ library(ggh4x)
 ################################################## SETUP ##################################################
 ###########################################################################################################
 set.seed(125)
-nsims <- 2
+nsims <- 50
 
 cpp.seed    <- 1
 num.threads <- 6 # default = NULL, irrelevant if fitting a single tree
 
-num.trees       <- 200
+num.trees       <- 2000
 sample.fraction <- 0.5
 min.node.size   <- 5 # min node size to be under consideration for a split
 honesty         <- T # honest subsampling
@@ -141,6 +143,28 @@ ggplot(df, aes(x = as.factor(K), y = test.err, color = method2, fill = method2))
   scale_fill_manual(values = pals::brewer.pastel2(3)) +
   ggh4x::facet_nested("Auxiliary Covariate Features (p)" + p ~ "Training Samples (n)" + n)
 
+
+df.time.ratio <- df %>%
+  select(-c("avg.nb.splits", "oob.err", "test.err")) %>%
+  group_by(K, p, n) %>%
+  reframe("fp1/grad" = time[method == "fp1"]/time[method == "grad"],
+          "fp2/grad" = time[method == "fp2"]/time[method == "grad"]) %>%
+  gather(method, time.ratio, `fp1/grad`:`fp2/grad`) %>%
+  group_by(K, p, n, method) %>%
+  mutate(hline = 1)
+ggplot(df.time.ratio, aes(x = as.factor(K), y = time.ratio, color = method, fill = method)) +
+  ggtitle(paste0("lm_forest: Fixed-Point vs. Gradient-Based Tree Fit Times"),
+          subtitle = paste0(num.trees, " trees, ", nsims, " replications")) +
+  scale_y_continuous(limits = c(0, 1.25)) +
+  geom_hline(aes(yintercept = hline), col = 'gray50', linewidth = 0.85) +
+  geom_boxplot(outlier.alpha = 0) +
+  scale_color_manual(values = pals::brewer.dark2(3)[-1]) +
+  scale_fill_manual(values = pals::brewer.pastel2(3)[-1]) +
+  theme(legend.position = c(0.0875, 0.2)) +
+  labs(fill = "Comparison", color = "Comparison") +
+  ylab("Relative Fit Time") +
+  theme(legend.text = element_text(family = "monospace")) +
+  ggh4x::facet_nested("Auxiliary Covariate Features (p)" + p ~ "Training Samples (n)" + n)
 
 
 
