@@ -1,6 +1,6 @@
-# Concerning the ongoing development of ths fork
+# Generalized random forests with fixed-point trees: Concerning the ongoing development of ths fork
 
-**Generalized random forests with fixed-point trees**: Accelerating generalized random forests using the fixed-point method (see [our new preprint](https://arxiv.org/abs/2306.11908)  for details!). Implementation of the fixed-point algorithm forked from the [``grf`` package](https://github.com/grf-labs/grf). The only models presently implemented using the fixed-point method are (heterogeneous) treatment effect estimation in the presence of multi-level (discrete) treatment assignment (via `multi_arm_causal_forest`) and multivariate continuous treatments (via `lm_forest`). The use of the fixed-point method can be specified via the new `method` argument made available for `multi_arm_causal_forest` & `lm_forest` such that
+Accelerating generalized random forests using the fixed-point method (see [our new preprint](https://arxiv.org/abs/2306.11908)  for details!). Implementation of the fixed-point algorithm forked from the [``grf`` package](https://github.com/grf-labs/grf). The only models/functions making use of a fixed-point method implementation are (heterogeneous) treatment effect estimation for multi-level (discrete) treatment assignment (via `multi_arm_causal_forest`) and multivariate continuous treatments (via `lm_forest`). The use of the fixed-point method can be specified via the new `method` argument made available for `multi_arm_causal_forest` & `lm_forest` such that
 * `method = "grad"`: original gradient-base method of generalized random forests (the **gradient tree** algorithm).
 * `method = "fp1"`: the exact fixed-point method of https://arxiv.org/abs/2306.11908.
 * `method = "fp2"`: the approximate fixed-point method of https://arxiv.org/abs/2306.11908.
@@ -9,7 +9,7 @@ Installation of this fork can be one through devtools
 ```R
 devtools::install_github("dfleis/grf", subdir = "r-package/grf")
 ```
-*Note that this will overwrite any existing installations of `grf`*.
+**Note that this will overwrite any existing installations of `grf`**.
 
 
 
@@ -51,7 +51,7 @@ The current development version can be installed from source using devtools.
 devtools::install_github("grf-labs/grf", subdir = "r-package/grf")
 ```
 
-Note that to install from source, a compiler that implements C++11 or later is required (clang 3.3 or higher, or g++ 4.8 or higher). If installing on Windows, the RTools toolchain is also required.
+Note that to install from source, a compiler that implements C++11 or later is required. If installing on Windows, the RTools toolchain is also required.
 
 ### Usage Examples
 
