@@ -1,22 +1,12 @@
-##############################################################################################################################
-# WARNING: Takes quite a long time to run the tests over a reasonable variety of parameter settings (n, p, K)
-#
-# Tests comparing the accuracy of the gradient-based method with the two fixed-point methods for heterogeneous effect
-# estimation in the presence of multiple continuous treatment regressors.
+########################################################################################################################
+# Tests comparing the gradient and fixed-point methods' ability to estimate highly curved treatment effects.
+#   * lm_forest
 #
 # NOTES:
-#   * Outcome model Y_i = W_i tau(X_i)^T + eps_i for
-#       - K-dimensional treatment regressors W_i ~ N(0, 1_K),
-#       - p-dimensional auxiliary covariates X_i ~ N(0, 1_p),
-#       - eps_i ~ N(0, 1),
-#       - tau(x) = (beta_1 x1, beta_2 x1, ..., beta_K x1), so that the effects are linearly heterogeneous in the
-#         first feature of the auxiliary covariates x = [x1, ..., xp], and where each beta_k ~ N(0, 1) is fixed across
-#         a single replication, but sampled randomly across the replications
-#   * Pre-computing residualized quantities Y.hat and W.hat prior to the main lm_forest calls so that we can pass the
-#     same result to all three implementations.
+#   *
+#   *
 #
-##############################################################################################################################
-#devtools::install_github("dfleis/grf", subdir = "r-package/grf")
+########################################################################################################################
 library(grf)
 library(tidyverse)
 library(ggplot2)
@@ -25,9 +15,8 @@ library(ggh4x)
 ###########################################################################################################
 ################################################## SETUP ##################################################
 ###########################################################################################################
-set.seed(125)
+set.seed(124)
 nsims <- 50
-
 cpp.seed    <- 1
 num.threads <- 6 # default = NULL, irrelevant if fitting a single tree
 
@@ -38,15 +27,21 @@ honesty         <- T # honest subsampling
 
 methods <- list("grad" = "grad", "fp1" = "fp1", "fp2" = "fp2")
 
-#--------------- grid of data-generating parameters
-sig.eps <- 1
-n.new   <- 1000 # nb. of test samples
+#--------------- data-generating parameters
+n.new <- 1000
+p <- 2
+nv <- c(2500, 5000)
+sv <- 10^seq(-4, 0, length.out = 5) # treatment effect concentrations about 0.5 (std dev of normal pdf)
+Kv <- c(2, 4, 8, 16)
 
-Kv <- c(2, 4, 8) # treatment regressors
-pv <- 2              # auxiliary covariates
-nv <- c(2500, 5000)  # training samples
+tau_k <- function(x, sigma) exp(-0.5 * (x[1] - 0.5)^2/sigma^2) # normal pdf(mu, sigma) rescaled to maximum 1 for all sigma
+tau   <- function(x, sigma, n.levels) {
+  if (is.vector(x)) rep(tau_k(x, sigma), times = n.levels)
+  else t(apply(x, 1, tau, sigma = sigma, n.levels = n.levels))
+}
 
-pars.grid <- expand.grid("K" = Kv, "p" = pv, "n" = nv)
+
+pars.grid <- expand.grid("s" = sv, "K" = Kv, "n" = nv)
 df.list <- vector(mode = "list", length = nrow(pars.grid))
 
 #################################################################################################################
@@ -56,28 +51,27 @@ t0.all <- Sys.time()
 for (idx.pars in 1:nrow(pars.grid)) {
   pars <- pars.grid[idx.pars,]
 
+  s <- pars$s
   K <- pars$K
-  p <- pars$p
   n <- pars$n
 
-  cat(paste0(Sys.time()), "\tidx.pars =", idx.pars, "of", nrow(pars.grid), "\tK =", K, "\tp =", p, "\tn =", n, "\t")
+  cat(paste0(Sys.time()), "\tidx.pars =", idx.pars, "of", nrow(pars.grid), "\ts =", s, "\tK =", K, "\tn =", n, "\t")
 
   t0.sim <- Sys.time()
   sim <- replicate(nsims, {
-    #=============== generate data
-    beta <- rnorm(K)
-    eps  <- rnorm(n, 0, sig.eps)
-    X    <- matrix(rnorm(n * p), nrow = n)
-    W    <- matrix(rnorm(n * K), nrow = n)
+    ### training data
+    X <- matrix(runif(n * p), nrow = n)
+    W <- matrix(runif(n * K), nrow = n)
+    tauX <- tau(X, sigma = s, n.levels = K)
+    eps  <- rnorm(n)
+    Y <- rowSums(W * tauX) + eps
 
-    tauX <- sapply(beta, function(b) b * X[,1])
-    Y    <- rowSums(W * tauX) + eps
+    ### testing data
+    X.new    <- matrix(runif(n.new * p), nrow = n.new)
+    tauX.new <- tau(X.new, sigma = s, n.levels = K)
 
-    # data for test errors
-    X.new    <- matrix(rnorm(n.new * p), nrow = n.new)
-    tauX.new <- sapply(beta, function(b) b * X.new[,1])
 
-    #=============== fit Y and W forests to estimate Y.hat and W.hat
+    #--------------- fit conditional mean forests of Y|X and W|X
     forest.Y <- grf::multi_regression_forest(X = X, Y = Y,
                                              num.trees     = max(50, round(num.trees/4)),
                                              min.node.size = 5,
@@ -89,7 +83,7 @@ for (idx.pars in 1:nrow(pars.grid)) {
     Y.hat <- predict(forest.Y)$predictions
     W.hat <- predict(forest.W)$predictions
 
-    #=============== fit main forests
+    #--------------- fit main forests
     forests <- lapply(sample(methods), function(m) { # randomize method order
       pt <- proc.time()
       forest.fit <- lm_forest(X = X, Y = Y, W = W, Y.hat = Y.hat, W.hat = W.hat,
@@ -121,11 +115,11 @@ for (idx.pars in 1:nrow(pars.grid)) {
   tm.sim <- Sys.time() - t0.sim
   print(tm.sim)
 
-  #=============== extract & restructure simulation outputs
+  #--------------- extract & restructure simulation outputs
   df.list[[idx.pars]] <- apply(sim, 1, bind_rows) %>%
     map2(.x = ., .y = names(.), ~ mutate(.x, method = .y)) %>% # add column in each df with the corresponding method name
     bind_rows() %>%
-    mutate(K = K, p = p, n = n)
+    mutate(s = s, K = K, p = p, n = n)
 }
 t1.all <- Sys.time()
 (tm.all <- t1.all - t0.all)
@@ -133,47 +127,30 @@ t1.all <- Sys.time()
 df <- bind_rows(df.list) %>%
   mutate(method2 = factor(method, levels = methods))
 
+
 ##################################################################################################################
 ################################################### DRAW PLOTS ###################################################
 ##################################################################################################################
 
-ggplot(df, aes(x = as.factor(K), y = test.err, color = method2, fill = method2)) +
+ggplot(df, aes(x = factor(log10(s)), y = test.err, color = method2, fill = method2)) +
   geom_boxplot() +
   scale_color_manual(values = pals::brewer.dark2(3)) +
   scale_fill_manual(values = pals::brewer.pastel2(3)) +
-  ggh4x::facet_nested("Auxiliary Covariate Features (p)" + p ~ "Training Samples (n)" + n)
-
-
-df.time.ratio <- df %>%
-  select(-c("avg.nb.splits", "oob.err", "test.err")) %>%
-  group_by(K, p, n) %>%
-  reframe("fp1/grad" = time[method == "fp1"]/time[method == "grad"],
-          "fp2/grad" = time[method == "fp2"]/time[method == "grad"]) %>%
-  gather(method, time.ratio, `fp1/grad`:`fp2/grad`) %>%
-  group_by(K, p, n, method) %>%
-  mutate(hline = 1)
-ggplot(df.time.ratio, aes(x = as.factor(K), y = time.ratio, color = method, fill = method)) +
-  ggtitle(paste0("lm_forest: Fixed-Point vs. Gradient-Based Tree Fit Times"),
-          subtitle = paste0(num.trees, " trees, ", nsims, " replications")) +
-  scale_y_continuous(limits = c(0, 1.25)) +
-  geom_hline(aes(yintercept = hline), col = 'gray50', linewidth = 0.85) +
-  geom_boxplot(outlier.alpha = 0) +
-  scale_color_manual(values = pals::brewer.dark2(3)[-1]) +
-  scale_fill_manual(values = pals::brewer.pastel2(3)[-1]) +
-  theme(legend.position = c(0.0875, 0.2)) +
-  labs(fill = "Comparison", color = "Comparison") +
-  ylab("Relative Fit Time") +
-  theme(legend.text = element_text(family = "monospace")) +
-  ggh4x::facet_nested("Auxiliary Covariate Features (p)" + p ~ "Training Samples (n)" + n)
+  ggh4x::facet_nested("Treatment Regressors (K)" + K ~ "Training Samples (n)" + n)
 
 
 
+ggplot(df, aes(x = factor(log10(s)), y = test.err, color = method2, fill = method2)) +
+  geom_boxplot() +
+  scale_color_manual(values = pals::brewer.dark2(3)) +
+  scale_fill_manual(values = pals::brewer.pastel2(3)) +
+  facet_grid(rows = vars(K), cols = vars(method2))
 
-
-
-
-
-
+ggplot(df, aes(x = method2, y = test.err, color = method2, fill = method2)) +
+  geom_boxplot() +
+  scale_color_manual(values = pals::brewer.dark2(3)) +
+  scale_fill_manual(values = pals::brewer.pastel2(3)) +
+  facet_grid(rows = vars(K), cols = vars(factor(log10(s) )))
 
 
 

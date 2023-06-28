@@ -1,8 +1,8 @@
 ##############################################################################################################################
-# Tests comparing the speed of the gradient-based method with the two fixed-point methods for heterogeneous effect
-# estimation in the presence of multiple continuous treatment regressors. The primary goal is to compare the fit times of
-# the "gradient tree" with the two implementations of the "fixed-point tree" algorithm, and so we begin by considering
-# forests of B = 1 tree with no subsampling.
+# WARNING: Takes quite a long time to run the tests over a reasonable variety of parameter settings (n, p, K)
+#
+# Tests comparing the accuracy of the gradient-based method with the two fixed-point methods for heterogeneous effect
+# estimation in the presence of multiple continuous treatment regressors.
 #
 # NOTES:
 #   * Outcome model Y_i = W_i tau(X_i)^T + eps_i for
@@ -12,8 +12,8 @@
 #       - tau(x) = (beta_1 x1, beta_2 x1, ..., beta_K x1), so that the effects are linearly heterogeneous in the
 #         first feature of the auxiliary covariates x = [x1, ..., xp], and where each beta_k ~ N(0, 1) is fixed across
 #         a single replication, but sampled randomly across the replications
-#   * Pre-computing residualized quantities Y.hat and W.hat outside of the main lm_forest call, setting them both to 0 for
-#     the sake of time (since this test is looking exclusively at speed and not accuracy).
+#   * Pre-computing residualizing quantities Y.hat and W.hat prior to the main lm_forest calls so that we can pass the
+#     same result to all three implementations.
 #
 ##############################################################################################################################
 #devtools::install_github("dfleis/grf", subdir = "r-package/grf")
@@ -25,23 +25,24 @@ library(ggh4x)
 ###########################################################################################################
 ################################################## SETUP ##################################################
 ###########################################################################################################
-set.seed(124)
-nsims <- 100
+set.seed(125)
+nsims <- 50
 
 cpp.seed    <- 1
-num.threads <- 1
+num.threads <- 6 # default = NULL, irrelevant if fitting a single tree
 
-sample.fraction <- 1 # default = 0.5, training samples used to fit each tree (drawn without replacement)
-min.node.size   <- 5 # default = 5, min size of a node for it to be under consideration for splitting
-honesty         <- F # default = T, honest subsampling
+num.trees       <- 2000
+sample.fraction <- 0.5
+min.node.size   <- 5 # min node size to be under consideration for a split
+honesty         <- T # honest subsampling
 
-#methods <- factor(c("grad", "fp1", "fp2"), levels = c("grad", "fp1", "fp2"))
 methods <- list("grad" = "grad", "fp1" = "fp1", "fp2" = "fp2")
 
 #--------------- grid of data-generating parameters
 sig.eps <- 1
+n.new   <- 1000 # nb. of test samples
 
-Kv <- c(2, 4, 8, 16) # treatment regressors
+Kv <- c(2, 4, 8) # treatment regressors
 pv <- 2              # auxiliary covariates
 nv <- c(2500, 5000)  # training samples
 
@@ -59,15 +60,11 @@ for (idx.pars in 1:nrow(pars.grid)) {
   p <- pars$p
   n <- pars$n
 
-  cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-      "\tidx.pars =", idx.pars, "of", nrow(pars.grid), "\tK =", K, "\tp =", p, "\tn =", n, "\t")
-
-  Y.hat <- matrix(0, nrow = n, ncol = 1)
-  W.hat <- matrix(0, nrow = n, ncol = K)
+  cat(paste0(Sys.time()), "\tidx.pars =", idx.pars, "of", nrow(pars.grid), "\tK =", K, "\tp =", p, "\tn =", n, "\t")
 
   t0.sim <- Sys.time()
   sim <- replicate(nsims, {
-    #===============  generate data
+    #=============== generate data
     beta <- rnorm(K)
     eps  <- rnorm(n, 0, sig.eps)
     X    <- matrix(rnorm(n * p), nrow = n)
@@ -76,25 +73,50 @@ for (idx.pars in 1:nrow(pars.grid)) {
     tauX <- sapply(beta, function(b) b * X[,1])
     Y    <- rowSums(W * tauX) + eps
 
-    #=============== fit main trees
-    trees <- lapply(sample(methods), function(m) { # randomize method order
+    # data for test errors
+    X.new    <- matrix(rnorm(n.new * p), nrow = n.new)
+    tauX.new <- sapply(beta, function(b) b * X.new[,1])
+
+    #=============== fit Y and W forests to estimate Y.hat and W.hat
+    forest.Y <- grf::multi_regression_forest(X = X, Y = Y,
+                                             num.trees     = max(50, round(num.trees/4)),
+                                             min.node.size = 5,
+                                             seed          = cpp.seed)
+    forest.W <- grf::multi_regression_forest(X = X, Y = W,
+                                             num.trees     = max(50, round(num.trees/4)),
+                                             min.node.size = 5,
+                                             seed          = cpp.seed)
+    Y.hat <- predict(forest.Y)$predictions
+    W.hat <- predict(forest.W)$predictions
+
+    #=============== fit main forests
+    forests <- lapply(sample(methods), function(m) { # randomize method order
       pt <- proc.time()
-      tree.fit <- lm_forest(X = X, Y = Y, W = W, Y.hat = Y.hat, W.hat = W.hat,
-                            num.trees       = 1,
-                            sample.fraction = sample.fraction,
-                            min.node.size   = min.node.size,
-                            honesty         = honesty,
-                            ci.group.size   = 1,
-                            compute.oob.predictions = F,
-                            method          = m,
-                            num.threads     = num.threads,
-                            seed            = cpp.seed)
-      time.fit  <- (proc.time() - pt)["elapsed"]
-      nb.splits <- sapply(tree.fit$`_split_vars`, length)
-      return (list("time" = unname(time.fit), "nb.splits" = nb.splits))
+      forest.fit <- lm_forest(X = X, Y = Y, W = W, Y.hat = Y.hat, W.hat = W.hat,
+                              num.trees       = num.trees,
+                              sample.fraction = sample.fraction,
+                              min.node.size   = min.node.size,
+                              honesty         = honesty,
+                              ci.group.size   = 1,
+                              compute.oob.predictions = F,
+                              method          = m,
+                              num.threads     = num.threads,
+                              seed            = cpp.seed)
+      time.fit      <- (proc.time() - pt)["elapsed"]
+      avg.nb.splits <- mean(sapply(forest.fit$`_split_vars`, length))
+
+      #===== oob errors
+      tauX.hat <- predict(forest.fit)$predictions[,,1]
+      oob.err  <- mean(sqrt(rowMeans((tauX.hat - tauX)^2)))
+
+      #===== test errors
+      tauX.new.hat <- predict(forest.fit, newdata = X.new)$predictions[,,1]
+      test.err     <- mean(sqrt(rowMeans((tauX.new.hat - tauX.new)^2)))
+
+      return (list("time" = unname(time.fit), "avg.nb.splits" = avg.nb.splits, "oob.err" = oob.err, "test.err" = test.err))
     })
-    trees <- trees[order(match(names(trees), names(methods)))] # re-order according to the original vector
-    return (trees)
+    forests <- forests[order(match(names(forests), names(methods)))] # re-order according to the original vector
+    return (forests)
   })
   tm.sim <- Sys.time() - t0.sim
   print(tm.sim)
@@ -111,23 +133,28 @@ t1.all <- Sys.time()
 df <- bind_rows(df.list) %>%
   mutate(method2 = factor(method, levels = methods))
 
-
-
 ##################################################################################################################
 ################################################### DRAW PLOTS ###################################################
 ##################################################################################################################
+
+ggplot(df, aes(x = as.factor(K), y = test.err, color = method2, fill = method2)) +
+  geom_boxplot() +
+  scale_color_manual(values = pals::brewer.dark2(3)) +
+  scale_fill_manual(values = pals::brewer.pastel2(3)) +
+  ggh4x::facet_nested("Auxiliary Covariate Features (p)" + p ~ "Training Samples (n)" + n)
+
+
 df.time.ratio <- df %>%
-  select(-c("nb.splits")) %>%
+  select(-c("avg.nb.splits", "oob.err", "test.err")) %>%
   group_by(K, p, n) %>%
   reframe("fp1/grad" = time[method == "fp1"]/time[method == "grad"],
           "fp2/grad" = time[method == "fp2"]/time[method == "grad"]) %>%
   gather(method, time.ratio, `fp1/grad`:`fp2/grad`) %>%
   group_by(K, p, n, method) %>%
   mutate(hline = 1)
-
 ggplot(df.time.ratio, aes(x = as.factor(K), y = time.ratio, color = method, fill = method)) +
   ggtitle(paste0("lm_forest: Fixed-Point vs. Gradient-Based Tree Fit Times"),
-          subtitle = paste0("One tree, ", nsims, " replications")) +
+          subtitle = paste0(num.trees, " trees, ", nsims, " replications")) +
   scale_y_continuous(limits = c(0, 1.25)) +
   geom_hline(aes(yintercept = hline), col = 'gray50', linewidth = 0.85) +
   geom_boxplot(outlier.alpha = 0) +
@@ -138,6 +165,13 @@ ggplot(df.time.ratio, aes(x = as.factor(K), y = time.ratio, color = method, fill
   ylab("Relative Fit Time") +
   theme(legend.text = element_text(family = "monospace")) +
   ggh4x::facet_nested("Auxiliary Covariate Features (p)" + p ~ "Training Samples (n)" + n)
+
+
+
+
+
+
+
 
 
 
