@@ -9,7 +9,7 @@ Installation of this fork can be one through devtools
 ```R
 devtools::install_github("dfleis/grf", subdir = "r-package/grf")
 ```
-*Note that this will overwrite any existing installations of `grf`*.
+**Note that this will overwrite any existing installations of `grf`**.
 
 
 
