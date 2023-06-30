@@ -1,7 +1,7 @@
 # Generalized random forests with fixed-point trees: Concerning the ongoing development of ths fork
 
-Accelerating generalized random forests using the fixed-point method (see [our new preprint](https://arxiv.org/abs/2306.11908)  for details!). Implementation of the fixed-point algorithm forked from the [``grf`` package](https://github.com/grf-labs/grf). The only models/functions making use of a fixed-point method implementation are (heterogeneous) treatment effect estimation for multi-level (discrete) treatment assignment (via `multi_arm_causal_forest`) and multivariate continuous treatments (via `lm_forest`). The use of the fixed-point method can be specified via the new `method` argument made available for `multi_arm_causal_forest` & `lm_forest` such that
-* `method = "grad"`: original gradient-base method of generalized random forests (the *gradient tree* algorithm).
+Accelerating generalized random forests using the fixed-point method (see [our new preprint](https://arxiv.org/abs/2306.11908)  for details!). This package adds additional functionality to the original [``grf`` package](https://github.com/grf-labs/grf), making implementations of the fixed-point algorithm available for heterogeneous treatment effect estimation. The only models/functions making use of a fixed-point method implementation are (heterogeneous) treatment effect estimation for multi-level (discrete) treatment assignment (via `multi_arm_causal_forest`) and multivariate continuous treatments (via `lm_forest`). The use of the fixed-point method can be specified via the new `method` argument made available for `multi_arm_causal_forest` & `lm_forest` such that
+* `method = "grad"`: original gradient-based method of generalized random forests (the *gradient tree* algorithm).
 * `method = "fp1"`: the exact fixed-point method of https://arxiv.org/abs/2306.11908.
 * `method = "fp2"`: the approximate fixed-point method of https://arxiv.org/abs/2306.11908.
 
