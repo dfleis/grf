@@ -214,6 +214,7 @@ multi_arm_causal_forest <- function(X, Y, W,
     warning("The treatment vector W contains unused levels (see `droplevels()` to drop unused levels).")
   }
   method <- match.arg(method, choices = c("grad", "fp1", "fp2"))
+  if (method %in% c("fp1","fp2") & ncol(Y) > 1) stop("Multivariate Y not yet supported by the fixed-point methods.")
   method.flag <- switch(method, "grad" = 1, "fp1" = 2, "fp2" = 3)
 
   args.orthog <- list(X = X,

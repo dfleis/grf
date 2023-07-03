@@ -170,6 +170,7 @@ lm_forest <- function(X, Y, W,
     gradient.weights <- rep(gradient.weights, NCOL(Y))
   }
   method <- match.arg(method, choices = c("grad", "fp1", "fp2"))
+  if (method %in% c("fp1","fp2") & ncol(Y) > 1) stop("Multivariate Y not yet supported by the fixed-point methods.")
   method.flag <- switch(method, "grad" = 1, "fp1" = 2, "fp2" = 3)
 
   args.orthog <- list(X = X,
