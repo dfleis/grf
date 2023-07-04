@@ -66,7 +66,7 @@ Rcpp::List multi_causal_train(const Rcpp::NumericMatrix& train_matrix,
 
   std::vector<Prediction> predictions;
   if (compute_oob_predictions) {
-    ForestPredictor predictor = multi_causal_predictor(num_threads, num_treatments, num_outcomes);
+    ForestPredictor predictor = multi_causal_predictor(num_threads, num_treatments, num_outcomes, method_flag);
     predictions = predictor.predict_oob(forest, data, false);
   }
 
@@ -79,6 +79,7 @@ Rcpp::List multi_causal_predict(const Rcpp::List& forest_object,
                                 const Rcpp::NumericMatrix& test_matrix,
                                 size_t num_outcomes,
                                 size_t num_treatments,
+                                int method_flag,
                                 unsigned int num_threads,
                                 bool estimate_variance) {
   Data train_data = RcppUtilities::convert_data(train_matrix);
@@ -86,7 +87,7 @@ Rcpp::List multi_causal_predict(const Rcpp::List& forest_object,
 
   Forest forest = RcppUtilities::deserialize_forest(forest_object);
 
-  ForestPredictor predictor = multi_causal_predictor(num_threads, num_treatments, num_outcomes);
+  ForestPredictor predictor = multi_causal_predictor(num_threads, num_treatments, num_outcomes, method_flag);
   std::vector<Prediction> predictions = predictor.predict(forest, train_data, data, estimate_variance);
   Rcpp::List result = RcppUtilities::create_prediction_object(predictions);
 
@@ -98,13 +99,14 @@ Rcpp::List multi_causal_predict_oob(const Rcpp::List& forest_object,
                                     const Rcpp::NumericMatrix& train_matrix,
                                     size_t num_outcomes,
                                     size_t num_treatments,
+                                    int method_flag,
                                     unsigned int num_threads,
                                     bool estimate_variance) {
   Data data = RcppUtilities::convert_data(train_matrix);
 
   Forest forest = RcppUtilities::deserialize_forest(forest_object);
 
-  ForestPredictor predictor = multi_causal_predictor(num_threads, num_treatments, num_outcomes);
+  ForestPredictor predictor = multi_causal_predictor(num_threads, num_treatments, num_outcomes, method_flag);
   std::vector<Prediction> predictions = predictor.predict_oob(forest, data, estimate_variance);
   Rcpp::List result = RcppUtilities::create_prediction_object(predictions);
 

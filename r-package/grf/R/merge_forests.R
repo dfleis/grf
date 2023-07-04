@@ -79,4 +79,10 @@ validate_forest_list <- function(forest_list) {
   if (length(n.cols) != 1 || length(n.obs) != 1) {
     stop("All forests in 'forest_list' must be trained on the same data.")
   }
+
+  if (all("method" %in% sapply(forest_list, names))) {
+    methods <- sapply(forest_list, function(f) f[["method"]])
+    if (length(unique(methods)) > 1)
+      stop("All forests in 'forest_list' must be trained with the same 'method'.")
+  }
 }

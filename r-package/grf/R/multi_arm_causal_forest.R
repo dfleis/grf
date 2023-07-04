@@ -432,10 +432,12 @@ predict.multi_arm_causal_forest <- function(object,
   forest.short <- object[-which(names(object) == "X.orig")]
   X <- object[["X.orig"]]
   train.data <- create_train_matrices(X)
+  method.flag <- switch(object[["method"]], "grad" = 1, "fp1" = 2, "fp2" = 3)
 
   args <- list(forest.object = forest.short,
                num.outcomes = num.outcomes,
                num.treatments = num.treatments,
+               method.flag = method.flag,
                num.threads = num.threads,
                estimate.variance = estimate.variance)
 

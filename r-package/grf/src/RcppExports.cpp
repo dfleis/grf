@@ -329,8 +329,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // multi_causal_predict
-Rcpp::List multi_causal_predict(const Rcpp::List& forest_object, const Rcpp::NumericMatrix& train_matrix, const Rcpp::NumericMatrix& test_matrix, size_t num_outcomes, size_t num_treatments, unsigned int num_threads, bool estimate_variance);
-RcppExport SEXP _grf_multi_causal_predict(SEXP forest_objectSEXP, SEXP train_matrixSEXP, SEXP test_matrixSEXP, SEXP num_outcomesSEXP, SEXP num_treatmentsSEXP, SEXP num_threadsSEXP, SEXP estimate_varianceSEXP) {
+Rcpp::List multi_causal_predict(const Rcpp::List& forest_object, const Rcpp::NumericMatrix& train_matrix, const Rcpp::NumericMatrix& test_matrix, size_t num_outcomes, size_t num_treatments, int method_flag, unsigned int num_threads, bool estimate_variance);
+RcppExport SEXP _grf_multi_causal_predict(SEXP forest_objectSEXP, SEXP train_matrixSEXP, SEXP test_matrixSEXP, SEXP num_outcomesSEXP, SEXP num_treatmentsSEXP, SEXP method_flagSEXP, SEXP num_threadsSEXP, SEXP estimate_varianceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -339,15 +339,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type test_matrix(test_matrixSEXP);
     Rcpp::traits::input_parameter< size_t >::type num_outcomes(num_outcomesSEXP);
     Rcpp::traits::input_parameter< size_t >::type num_treatments(num_treatmentsSEXP);
+    Rcpp::traits::input_parameter< int >::type method_flag(method_flagSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type num_threads(num_threadsSEXP);
     Rcpp::traits::input_parameter< bool >::type estimate_variance(estimate_varianceSEXP);
-    rcpp_result_gen = Rcpp::wrap(multi_causal_predict(forest_object, train_matrix, test_matrix, num_outcomes, num_treatments, num_threads, estimate_variance));
+    rcpp_result_gen = Rcpp::wrap(multi_causal_predict(forest_object, train_matrix, test_matrix, num_outcomes, num_treatments, method_flag, num_threads, estimate_variance));
     return rcpp_result_gen;
 END_RCPP
 }
 // multi_causal_predict_oob
-Rcpp::List multi_causal_predict_oob(const Rcpp::List& forest_object, const Rcpp::NumericMatrix& train_matrix, size_t num_outcomes, size_t num_treatments, unsigned int num_threads, bool estimate_variance);
-RcppExport SEXP _grf_multi_causal_predict_oob(SEXP forest_objectSEXP, SEXP train_matrixSEXP, SEXP num_outcomesSEXP, SEXP num_treatmentsSEXP, SEXP num_threadsSEXP, SEXP estimate_varianceSEXP) {
+Rcpp::List multi_causal_predict_oob(const Rcpp::List& forest_object, const Rcpp::NumericMatrix& train_matrix, size_t num_outcomes, size_t num_treatments, int method_flag, unsigned int num_threads, bool estimate_variance);
+RcppExport SEXP _grf_multi_causal_predict_oob(SEXP forest_objectSEXP, SEXP train_matrixSEXP, SEXP num_outcomesSEXP, SEXP num_treatmentsSEXP, SEXP method_flagSEXP, SEXP num_threadsSEXP, SEXP estimate_varianceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -355,9 +356,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type train_matrix(train_matrixSEXP);
     Rcpp::traits::input_parameter< size_t >::type num_outcomes(num_outcomesSEXP);
     Rcpp::traits::input_parameter< size_t >::type num_treatments(num_treatmentsSEXP);
+    Rcpp::traits::input_parameter< int >::type method_flag(method_flagSEXP);
     Rcpp::traits::input_parameter< unsigned int >::type num_threads(num_threadsSEXP);
     Rcpp::traits::input_parameter< bool >::type estimate_variance(estimate_varianceSEXP);
-    rcpp_result_gen = Rcpp::wrap(multi_causal_predict_oob(forest_object, train_matrix, num_outcomes, num_treatments, num_threads, estimate_variance));
+    rcpp_result_gen = Rcpp::wrap(multi_causal_predict_oob(forest_object, train_matrix, num_outcomes, num_treatments, method_flag, num_threads, estimate_variance));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -756,8 +758,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_grf_instrumental_predict", (DL_FUNC) &_grf_instrumental_predict, 8},
     {"_grf_instrumental_predict_oob", (DL_FUNC) &_grf_instrumental_predict_oob, 7},
     {"_grf_multi_causal_train", (DL_FUNC) &_grf_multi_causal_train, 23},
-    {"_grf_multi_causal_predict", (DL_FUNC) &_grf_multi_causal_predict, 7},
-    {"_grf_multi_causal_predict_oob", (DL_FUNC) &_grf_multi_causal_predict_oob, 6},
+    {"_grf_multi_causal_predict", (DL_FUNC) &_grf_multi_causal_predict, 8},
+    {"_grf_multi_causal_predict_oob", (DL_FUNC) &_grf_multi_causal_predict_oob, 7},
     {"_grf_multi_regression_train", (DL_FUNC) &_grf_multi_regression_train, 18},
     {"_grf_multi_regression_predict", (DL_FUNC) &_grf_multi_regression_predict, 5},
     {"_grf_multi_regression_predict_oob", (DL_FUNC) &_grf_multi_regression_predict_oob, 4},
