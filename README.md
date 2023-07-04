@@ -11,6 +11,10 @@ devtools::install_github("dfleis/grf", subdir = "r-package/grf")
 ```
 **Note that this will overwrite any existing installations of `grf`**.
 
+Other notes & to do lists:
+* This implementation was carried out on a system running Ubuntu 20.04, I've yet to put any time into cross-platform compatibility.
+* The way I've implemented the choice of gradient/fixed-point methods (via the `method` argument for the user-facing R functions and via the `method_flag` argument for the underlying C++ binding) could probably be a little cleaner. I think a better way of passing the choice of method is to include a `method_flag` private variable to `ForestOptions` (along with all the appropriate getters & functions), and read the flag just as the `ci_group_size` value is read throughout the C++ code. However, at the time of writing, this seems to be substatially more work and so I'll save it for later. The upshot of implementing it via a `ForestOptions` variable is that the choice of method can be implicitly passed to the prediction function rather than requiring me to manually include a `[["method"]` field in the forest output which is then extracted by the prediction function (again, much like how `ci_group_size` is implemented).
+
 
 
 # generalized random forests <a href='https://grf-labs.github.io/grf/'><img src='https://raw.githubusercontent.com/grf-labs/grf/master/images/logo/grf_logo_wbg_cropped.png' align="right" height="120" /></a>
