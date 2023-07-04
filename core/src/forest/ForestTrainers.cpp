@@ -19,6 +19,7 @@
 #include "prediction/CausalSurvivalPredictionStrategy.h"
 #include "prediction/InstrumentalPredictionStrategy.h"
 #include "prediction/MultiCausalPredictionStrategy.h"
+#include "prediction/MultiCausalPredictionStrategyFP1.h"
 #include "prediction/RegressionPredictionStrategy.h"
 #include "prediction/MultiRegressionPredictionStrategy.h"
 #include "prediction/ProbabilityPredictionStrategy.h"
@@ -61,22 +62,28 @@ ForestTrainer multi_causal_trainer(size_t num_treatments,
                                    int method_flag,
                                    const std::vector<double>& gradient_weights) {
   size_t response_length = num_treatments * num_outcomes;
-  std::unique_ptr<RelabelingStrategy> relabeling_strategy;
+  RelabelingStrategy *rs;
+  OptimizedPredictionStrategy *ops;
   switch (method_flag) {
-  case 1: // method = "grad", original gradient-based pseudo-outcomes for multi-level treatment effects
-    relabeling_strategy = std::unique_ptr<RelabelingStrategy>(new MultiCausalRelabelingStrategy(response_length, gradient_weights));
+  case 1: // method = "grad", original gradient-based pseudo-outcomes
+    rs = new MultiCausalRelabelingStrategy(response_length, gradient_weights);
+    ops = new MultiCausalPredictionStrategy(num_treatments, num_outcomes);
     break;
-  case 2: // method = "fp1", exact fixed-point pseudo-outcomes for multi-level treatment effects
-    relabeling_strategy = std::unique_ptr<RelabelingStrategy>(new MultiCausalRelabelingStrategyFP1(response_length, gradient_weights));
+  case 2: // method = "fp1", exact fixed-point pseudo-outcomes
+    rs = new MultiCausalRelabelingStrategyFP1(response_length, gradient_weights);
+    ops = new MultiCausalPredictionStrategyFP1(num_treatments, num_outcomes);
     break;
-  case 3: // method = "fp2", approximate fixed-point pseudo-outcomes for multi-level treatment effects
-    relabeling_strategy = std::unique_ptr<RelabelingStrategy>(new MultiCausalRelabelingStrategyFP2(response_length, gradient_weights));
+  case 3: // method = "fp2", approximate fixed-point pseudo-outcomes
+    rs = new MultiCausalRelabelingStrategyFP2(response_length, gradient_weights);
+    ops = new MultiCausalPredictionStrategyFP1(num_treatments, num_outcomes); // same as FP1
     break;
   }
+  std::unique_ptr<RelabelingStrategy> relabeling_strategy(rs);
+  std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(ops);
+
   std::unique_ptr<SplittingRuleFactory> splitting_rule_factory = stabilize_splits
     ? std::unique_ptr<SplittingRuleFactory>(new MultiCausalSplittingRuleFactory(response_length, num_treatments))
     : std::unique_ptr<SplittingRuleFactory>(new MultiRegressionSplittingRuleFactory(response_length));
-  std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new MultiCausalPredictionStrategy(num_treatments, num_outcomes));
 
   return ForestTrainer(std::move(relabeling_strategy),
                        std::move(splitting_rule_factory),

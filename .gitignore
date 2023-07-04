@@ -3,3 +3,6 @@
 
 # vscode files
 .vscode/
+
+# temporary tests
+tests-tmp/ 
