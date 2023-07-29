@@ -1,7 +1,7 @@
 # Generalized random forests with fixed-point trees: Concerning the ongoing development of ths fork
 
-Accelerating generalized random forests using the fixed-point method (see [our new preprint](https://arxiv.org/abs/2306.11908)  for details!). This package adds additional functionality to the original [``grf`` package](https://github.com/grf-labs/grf), making implementations of the fixed-point algorithm available for heterogeneous treatment effect estimation. The only models/functions making use of a fixed-point method implementation are (heterogeneous) treatment effect estimation for multi-level (discrete) treatment assignment (via `multi_arm_causal_forest`) and multivariate continuous treatments (via `lm_forest`). The use of the fixed-point method can be specified via the new `method` argument made available for `multi_arm_causal_forest` & `lm_forest` such that
-* `method = "grad"`: original gradient-based method of generalized random forests (the *gradient tree* algorithm).
+Accelerating generalized random forests using the fixed-point method (see [our new preprint](https://arxiv.org/abs/2306.11908)  for details!). This package adds additional functionality to the original [grf package](https://github.com/grf-labs/grf), making implementations of the fixed-point algorithm available for heterogeneous treatment effect estimation. The only models/functions making use of a fixed-point method implementation are (heterogeneous) treatment effect estimation for multi-level (discrete) treatment assignment (via `multi_arm_causal_forest`) and multivariate continuous treatments (via `lm_forest`). The use of the fixed-point method can be specified via the new `method` argument made available for `multi_arm_causal_forest` & `lm_forest` such that
+* `method = "grad"`: original gradient-based method (see the original GRF manuscript https://arxiv.org/abs/1610.01271).
 * `method = "fp1"`: the exact fixed-point method of https://arxiv.org/abs/2306.11908.
 * `method = "fp2"`: the approximate fixed-point method of https://arxiv.org/abs/2306.11908.
 
@@ -9,10 +9,11 @@ Installation of this fork can be one through devtools
 ```R
 devtools::install_github("dfleis/grf", subdir = "r-package/grf")
 ```
-**Note that this will overwrite any existing installations of `grf`**.
+**Note that this will overwrite any existing installations of grf**.
 
 Other notes & to do lists:
-* This implementation was carried out on a system running Ubuntu 20.04, I've yet to put any time into cross-platform compatibility.
+* To emphasize: The only functions affected by the fixed-point algorithm are those related to `multi_arm_causal_forest` and `lm_forest`. The default behaviour of these methods will be identical to the original grf package, but it now offers estimation via the fixed-point procedure through the `method` argument of both functions. 
+* This implementation was carried out on a system running Ubuntu 20.04. I've yet to put any significant time into cross-platform compatibility, but a quick test on Windows 10 using the RTools toolchain to build the package from source seemed to have worked fine (using RTools 4.3 and R 4.3.1, following the *Building packages from source using the toolchain tarball* section of https://cran.r-project.org/bin/windows/base/howto-R-devel.html, and installing the package via the `devtools::install_github` command written above).
 * The way I've implemented the choice of gradient/fixed-point methods (via the `method` argument for the user-facing R functions and via the `method_flag` argument for the underlying C++ binding) could probably be a little cleaner. I think a better way of passing the choice of method is to include a `method_flag` private variable to `ForestOptions` (along with all the appropriate getters & functions), and read the flag just as the `ci_group_size` value is read throughout the C++ code. However, at the time of writing, this seems to be substatially more work and so I'll save it for later. The upshot of implementing it via a `ForestOptions` variable would be that the choice of method could be implicitly passed to the prediction function rather than requiring me to manually include a `[["method"]]` field in the forest output which is then extracted by the prediction function (again, much like how `ci_group_size` is implemented).
 
 
@@ -176,7 +177,7 @@ Rina Friedberg, Julie Tibshirani, Susan Athey, and Stefan Wager.
 
 Imke Mayer, Erik Sverdrup, Tobias Gauss, Jean-Denis Moyer, Stefan Wager and Julie Josse.
 <b>Doubly Robust Treatment Effect Estimation with Missing Attributes.</b>
-<i>Annals of Applied Statistics</i>, 14(3) 2020.
+<i>Annals of Applied Statistics</i>, 14(3), 2020.
 [<a href="https://projecteuclid.org/euclid.aoas/1600454872">paper</a>,
 <a href="https://arxiv.org/pdf/1910.10624.pdf">arxiv</a>]
 
