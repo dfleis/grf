@@ -24,7 +24,7 @@ namespace grf {
 
 ForestPredictor instrumental_predictor(uint num_threads);
 
-ForestPredictor multi_causal_predictor(uint num_threads, size_t num_treatments, size_t num_outcomes, int method_flag);
+ForestPredictor multi_causal_predictor(uint num_threads, size_t num_treatments, size_t num_outcomes);
 
 ForestPredictor quantile_predictor(uint num_threads,
                                    const std::vector<double>& quantiles);

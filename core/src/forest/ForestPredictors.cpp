@@ -18,7 +18,6 @@
 #include "forest/ForestPredictors.h"
 #include "prediction/InstrumentalPredictionStrategy.h"
 #include "prediction/MultiCausalPredictionStrategy.h"
-#include "prediction/MultiCausalPredictionStrategyFP1.h"
 #include "prediction/QuantilePredictionStrategy.h"
 #include "prediction/ProbabilityPredictionStrategy.h"
 #include "prediction/RegressionPredictionStrategy.h"
@@ -36,21 +35,9 @@ ForestPredictor instrumental_predictor(uint num_threads) {
   return ForestPredictor(num_threads, std::move(prediction_strategy));
 }
 
-ForestPredictor multi_causal_predictor(uint num_threads, size_t num_treatments, size_t num_outcomes, int method_flag) {
+ForestPredictor multi_causal_predictor(uint num_threads, size_t num_treatments, size_t num_outcomes) {
   num_threads = ForestOptions::validate_num_threads(num_threads);
-  OptimizedPredictionStrategy *ops;
-  switch (method_flag) {
-  case 1: // method = "grad", original gradient-based pseudo-outcomes
-    ops = new MultiCausalPredictionStrategy(num_treatments, num_outcomes);
-    break;
-  case 2: // method = "fp1", exact fixed-point pseudo-outcomes
-    ops = new MultiCausalPredictionStrategyFP1(num_treatments, num_outcomes);
-    break;
-  case 3: // method = "fp2", approximate fixed-point pseudo-outcomes
-    ops = new MultiCausalPredictionStrategyFP1(num_treatments, num_outcomes); // same as FP1
-    break;
-  }
-  std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(ops);
+  std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new MultiCausalPredictionStrategy(num_treatments, num_outcomes));
   return ForestPredictor(num_threads, std::move(prediction_strategy));
 }
 
