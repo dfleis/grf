@@ -184,3 +184,65 @@ Rcpp::List ll_regression_predict_oob(const Rcpp::List& forest_object,
 
   return result;
 }
+
+// [[Rcpp::export]]
+Rcpp::List ll_regression_predict2(const Rcpp::List& forest_object,
+                                  const Rcpp::NumericMatrix& train_matrix,
+                                  size_t outcome_index,
+                                  const Rcpp::NumericMatrix& test_matrix,
+                                  double ll_elnet_alpha,
+                                  std::vector<double> ll_lambda,
+                                  bool ll_weight_penalty,
+                                  std::vector<size_t> linear_correction_variables,
+                                  unsigned int num_threads,
+                                  bool estimate_variance,
+                                  double thresh,
+                                  size_t maxit) {
+  Data train_data = RcppUtilities::convert_data(train_matrix);
+  train_data.set_outcome_index(outcome_index);
+  Data data = RcppUtilities::convert_data(test_matrix);
+
+  Forest deserialized_forest = RcppUtilities::deserialize_forest(forest_object);
+
+  ForestPredictor predictor = ll_regression_predictor2(num_threads,
+                                                       ll_elnet_alpha,
+                                                       ll_lambda,
+                                                       ll_weight_penalty,
+                                                       linear_correction_variables,
+                                                       thresh,
+                                                       maxit);
+  std::vector<Prediction> predictions = predictor.predict(deserialized_forest, train_data, data, estimate_variance);
+  Rcpp::List result = RcppUtilities::create_prediction_object(predictions);
+
+  return result;
+}
+
+// [[Rcpp::export]]
+Rcpp::List ll_regression_predict_oob2(const Rcpp::List& forest_object,
+                                      const Rcpp::NumericMatrix& train_matrix,
+                                      size_t outcome_index,
+                                      double ll_elnet_alpha,
+                                      std::vector<double> ll_lambda,
+                                      bool ll_weight_penalty,
+                                      std::vector<size_t> linear_correction_variables,
+                                      unsigned int num_threads,
+                                      bool estimate_variance,
+                                      double thresh,
+                                      size_t maxit) {
+  Data data = RcppUtilities::convert_data(train_matrix);
+  data.set_outcome_index(outcome_index);
+
+  Forest deserialized_forest = RcppUtilities::deserialize_forest(forest_object);
+
+  ForestPredictor predictor = ll_regression_predictor2(num_threads,
+                                                       ll_elnet_alpha,
+                                                       ll_lambda,
+                                                       ll_weight_penalty,
+                                                       linear_correction_variables,
+                                                       thresh,
+                                                       maxit);
+  std::vector<Prediction> predictions = predictor.predict_oob(deserialized_forest, data, estimate_variance);
+  Rcpp::List result = RcppUtilities::create_prediction_object(predictions);
+
+  return result;
+}

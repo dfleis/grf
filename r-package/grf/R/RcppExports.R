@@ -133,6 +133,14 @@ ll_regression_predict_oob <- function(forest_object, train_matrix, outcome_index
     .Call('_grf_ll_regression_predict_oob', PACKAGE = 'grf', forest_object, train_matrix, outcome_index, ll_lambda, ll_weight_penalty, linear_correction_variables, num_threads, estimate_variance)
 }
 
+ll_regression_predict2 <- function(forest_object, train_matrix, outcome_index, test_matrix, ll_elnet_alpha, ll_lambda, ll_weight_penalty, linear_correction_variables, num_threads, estimate_variance, thresh, maxit) {
+    .Call('_grf_ll_regression_predict2', PACKAGE = 'grf', forest_object, train_matrix, outcome_index, test_matrix, ll_elnet_alpha, ll_lambda, ll_weight_penalty, linear_correction_variables, num_threads, estimate_variance, thresh, maxit)
+}
+
+ll_regression_predict_oob2 <- function(forest_object, train_matrix, outcome_index, ll_elnet_alpha, ll_lambda, ll_weight_penalty, linear_correction_variables, num_threads, estimate_variance, thresh, maxit) {
+    .Call('_grf_ll_regression_predict_oob2', PACKAGE = 'grf', forest_object, train_matrix, outcome_index, ll_elnet_alpha, ll_lambda, ll_weight_penalty, linear_correction_variables, num_threads, estimate_variance, thresh, maxit)
+}
+
 survival_train <- function(train_matrix, outcome_index, censor_index, sample_weight_index, use_sample_weights, mtry, num_trees, min_node_size, sample_fraction, honesty, honesty_fraction, honesty_prune_leaves, alpha, num_failures, clusters, samples_per_cluster, compute_oob_predictions, prediction_type, num_threads, seed) {
     .Call('_grf_survival_train', PACKAGE = 'grf', train_matrix, outcome_index, censor_index, sample_weight_index, use_sample_weights, mtry, num_trees, min_node_size, sample_fraction, honesty, honesty_fraction, honesty_prune_leaves, alpha, num_failures, clusters, samples_per_cluster, compute_oob_predictions, prediction_type, num_threads, seed)
 }

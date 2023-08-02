@@ -23,6 +23,7 @@
 #include "prediction/RegressionPredictionStrategy.h"
 #include "prediction/MultiRegressionPredictionStrategy.h"
 #include "prediction/LocalLinearPredictionStrategy.h"
+#include "prediction/LocalLinearPredictionStrategy2.h"
 #include "prediction/LLCausalPredictionStrategy.h"
 #include "prediction/SurvivalPredictionStrategy.h"
 #include "prediction/CausalSurvivalPredictionStrategy.h"
@@ -73,6 +74,19 @@ ForestPredictor ll_regression_predictor(uint num_threads,
   num_threads = ForestOptions::validate_num_threads(num_threads);
   std::unique_ptr<DefaultPredictionStrategy> prediction_strategy(
       new LocalLinearPredictionStrategy(lambdas, weight_penalty, linear_correction_variables));
+  return ForestPredictor(num_threads, std::move(prediction_strategy));
+}
+
+ForestPredictor ll_regression_predictor2(uint num_threads,
+                                         double alpha,
+                                         std::vector<double> lambdas,
+                                         bool weight_penalty,
+                                         std::vector<size_t> linear_correction_variables,
+                                         double thresh,
+                                         size_t maxit) {
+  num_threads = ForestOptions::validate_num_threads(num_threads);
+  std::unique_ptr<DefaultPredictionStrategy> prediction_strategy(
+      new LocalLinearPredictionStrategy2(alpha, lambdas, weight_penalty, linear_correction_variables, thresh, maxit));
   return ForestPredictor(num_threads, std::move(prediction_strategy));
 }
 
