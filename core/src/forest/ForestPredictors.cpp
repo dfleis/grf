@@ -83,7 +83,7 @@ ForestPredictor ll_regression_predictor2(uint num_threads,
                                          bool weight_penalty,
                                          std::vector<size_t> linear_correction_variables,
                                          double thresh,
-                                         size_t maxit) {
+                                         int maxit) {
   num_threads = ForestOptions::validate_num_threads(num_threads);
   std::unique_ptr<DefaultPredictionStrategy> prediction_strategy(
       new LocalLinearPredictionStrategy2(alpha, lambdas, weight_penalty, linear_correction_variables, thresh, maxit));

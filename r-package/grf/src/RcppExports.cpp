@@ -672,7 +672,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // ll_regression_predict2
-Rcpp::List ll_regression_predict2(const Rcpp::List& forest_object, const Rcpp::NumericMatrix& train_matrix, size_t outcome_index, const Rcpp::NumericMatrix& test_matrix, double ll_elnet_alpha, std::vector<double> ll_lambda, bool ll_weight_penalty, std::vector<size_t> linear_correction_variables, unsigned int num_threads, bool estimate_variance, double thresh, size_t maxit);
+Rcpp::List ll_regression_predict2(const Rcpp::List& forest_object, const Rcpp::NumericMatrix& train_matrix, size_t outcome_index, const Rcpp::NumericMatrix& test_matrix, double ll_elnet_alpha, std::vector<double> ll_lambda, bool ll_weight_penalty, std::vector<size_t> linear_correction_variables, unsigned int num_threads, bool estimate_variance, double thresh, int maxit);
 RcppExport SEXP _grf_ll_regression_predict2(SEXP forest_objectSEXP, SEXP train_matrixSEXP, SEXP outcome_indexSEXP, SEXP test_matrixSEXP, SEXP ll_elnet_alphaSEXP, SEXP ll_lambdaSEXP, SEXP ll_weight_penaltySEXP, SEXP linear_correction_variablesSEXP, SEXP num_threadsSEXP, SEXP estimate_varianceSEXP, SEXP threshSEXP, SEXP maxitSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -688,13 +688,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type num_threads(num_threadsSEXP);
     Rcpp::traits::input_parameter< bool >::type estimate_variance(estimate_varianceSEXP);
     Rcpp::traits::input_parameter< double >::type thresh(threshSEXP);
-    Rcpp::traits::input_parameter< size_t >::type maxit(maxitSEXP);
+    Rcpp::traits::input_parameter< int >::type maxit(maxitSEXP);
     rcpp_result_gen = Rcpp::wrap(ll_regression_predict2(forest_object, train_matrix, outcome_index, test_matrix, ll_elnet_alpha, ll_lambda, ll_weight_penalty, linear_correction_variables, num_threads, estimate_variance, thresh, maxit));
     return rcpp_result_gen;
 END_RCPP
 }
 // ll_regression_predict_oob2
-Rcpp::List ll_regression_predict_oob2(const Rcpp::List& forest_object, const Rcpp::NumericMatrix& train_matrix, size_t outcome_index, double ll_elnet_alpha, std::vector<double> ll_lambda, bool ll_weight_penalty, std::vector<size_t> linear_correction_variables, unsigned int num_threads, bool estimate_variance, double thresh, size_t maxit);
+Rcpp::List ll_regression_predict_oob2(const Rcpp::List& forest_object, const Rcpp::NumericMatrix& train_matrix, size_t outcome_index, double ll_elnet_alpha, std::vector<double> ll_lambda, bool ll_weight_penalty, std::vector<size_t> linear_correction_variables, unsigned int num_threads, bool estimate_variance, double thresh, int maxit);
 RcppExport SEXP _grf_ll_regression_predict_oob2(SEXP forest_objectSEXP, SEXP train_matrixSEXP, SEXP outcome_indexSEXP, SEXP ll_elnet_alphaSEXP, SEXP ll_lambdaSEXP, SEXP ll_weight_penaltySEXP, SEXP linear_correction_variablesSEXP, SEXP num_threadsSEXP, SEXP estimate_varianceSEXP, SEXP threshSEXP, SEXP maxitSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -709,7 +709,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< unsigned int >::type num_threads(num_threadsSEXP);
     Rcpp::traits::input_parameter< bool >::type estimate_variance(estimate_varianceSEXP);
     Rcpp::traits::input_parameter< double >::type thresh(threshSEXP);
-    Rcpp::traits::input_parameter< size_t >::type maxit(maxitSEXP);
+    Rcpp::traits::input_parameter< int >::type maxit(maxitSEXP);
     rcpp_result_gen = Rcpp::wrap(ll_regression_predict_oob2(forest_object, train_matrix, outcome_index, ll_elnet_alpha, ll_lambda, ll_weight_penalty, linear_correction_variables, num_threads, estimate_variance, thresh, maxit));
     return rcpp_result_gen;
 END_RCPP

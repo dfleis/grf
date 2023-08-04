@@ -35,7 +35,6 @@ Rcpp::List RcppUtilities::create_forest_object(Forest& forest,
 Forest RcppUtilities::deserialize_forest(const Rcpp::List& forest_object) {
   size_t ci_group_size = forest_object["_ci_group_size"];
   size_t num_variables = forest_object["_num_variables"];
-
   size_t num_trees = forest_object["_num_trees"];
   std::vector<std::unique_ptr<Tree>> trees;
   trees.reserve(num_trees);

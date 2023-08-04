@@ -14,7 +14,6 @@
   You should have received a copy of the GNU General Public License
   along with grf. If not, see <http://www.gnu.org/licenses/>.
  #-------------------------------------------------------------------------------*/
-
 #include <cmath>
 #include <vector>
 #include "commons/utility.h"
@@ -75,6 +74,7 @@ std::vector<double> LocalLinearPredictionStrategy::predict(
   Eigen::MatrixXd M;
   size_t num_lambdas = lambdas.size();
   std::vector<double> predictions(num_lambdas);
+
 
   for (size_t i = 0; i < num_lambdas; ++i){
     double lambda = lambdas[i];

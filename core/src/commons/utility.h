@@ -45,6 +45,12 @@ std::pair<std::vector<double>, std::vector<size_t>> load_data(const std::string&
 
 void set_data(std::pair<std::vector<double>, std::vector<size_t>>& data, size_t row, size_t col, double value);
 
+// for elastic net tests (without glmnetpp)
+template <typename T> int sgn(T val);
+
+// for elastic net tests (without glmnetpp)
+double soft_threshold(double z, double gamma);
+
 } // namespace grf
 
 #endif /* GRF_UTILITY_H_ */

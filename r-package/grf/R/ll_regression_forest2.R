@@ -99,6 +99,8 @@ ll_regression_forest2 <- function(X, Y,
                                   tune.num.draws = 1000,
                                   num.threads = NULL,
                                   seed = runif(1, 0, .Machine$integer.max)) {
+  if (enable.ll.split) stop("elastic net splits not yet implemented.")
+
   has.missing.values <- validate_X(X)
   Y <- validate_observations(Y, X)
   clusters <- validate_clusters(clusters, X)
@@ -190,6 +192,7 @@ ll_regression_forest2 <- function(X, Y,
   }
 
   if (enable.ll.split) {
+    stop("[[ TODO ]] elastic net splitting rule not yet implemented for forest training.")
     forest <- do.call.rcpp(ll_regression_train, c(data, args))
   } else {
     forest <- do.call.rcpp(regression_train, c(data, args))
@@ -281,6 +284,15 @@ predict.ll_regression_forest2 <- function(object, newdata = NULL,
   ll.elnet.alpha <- validate_ll_elnet_alpha(ll.elnet.alpha)
   thresh <- validate_ll_thresh(thresh)
   maxit <- validate_ll_maxit(maxit)
+
+  if (ll.lambda == 0) warning("[[ TODO ]] some useful warning about how estimates are highly",
+                              " unstable when lambda = 0 (or sufficiently small)",
+                              " with n small, and possible num.trees small (the prediction",
+                              " regressions within each leaf will be singular. current grf::ll_regression_forest",
+                              " predictions don't crash since the C++ Eigen::ldlt(...)",
+                              " solver gives some sort of result in the case of singular M",
+                              " and glmnet doesn't crash but clearly gives unstable estimates.")
+
 
   linear.correction.variables <- validate_ll_vars(linear.correction.variables, ncol(X))
   if (is.null(ll.lambda)) {

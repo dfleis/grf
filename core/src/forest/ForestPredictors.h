@@ -46,7 +46,7 @@ ForestPredictor ll_regression_predictor2(uint num_threads,
                                          bool weight_penalty,
                                          std::vector<size_t> linear_correction_variables,
                                          double thresh,
-                                         size_t maxit);
+                                         int maxit);
 
 ForestPredictor ll_causal_predictor(uint num_threads,
                                    std::vector<double> lambdas,

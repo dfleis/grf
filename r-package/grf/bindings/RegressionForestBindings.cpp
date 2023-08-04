@@ -197,7 +197,7 @@ Rcpp::List ll_regression_predict2(const Rcpp::List& forest_object,
                                   unsigned int num_threads,
                                   bool estimate_variance,
                                   double thresh,
-                                  size_t maxit) {
+                                  int maxit) {
   Data train_data = RcppUtilities::convert_data(train_matrix);
   train_data.set_outcome_index(outcome_index);
   Data data = RcppUtilities::convert_data(test_matrix);
@@ -228,7 +228,7 @@ Rcpp::List ll_regression_predict_oob2(const Rcpp::List& forest_object,
                                       unsigned int num_threads,
                                       bool estimate_variance,
                                       double thresh,
-                                      size_t maxit) {
+                                      int maxit) {
   Data data = RcppUtilities::convert_data(train_matrix);
   data.set_outcome_index(outcome_index);
 

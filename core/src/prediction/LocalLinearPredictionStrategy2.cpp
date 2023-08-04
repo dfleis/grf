@@ -17,12 +17,10 @@
 
 #include <cmath>
 #include <vector>
-#include "commons/utility.h"
+#include "commons/utility.h" // [[ TODO ]] check if includes are necessary
 #include "commons/Data.h"
 #include "commons/elnet_wrap/elnet_wrap.hpp"
 #include "prediction/LocalLinearPredictionStrategy2.h"
-
-#include <iostream>
 
 namespace grf {
 
@@ -31,7 +29,7 @@ LocalLinearPredictionStrategy2::LocalLinearPredictionStrategy2(double alpha,
                                                                bool weight_penalty,
                                                                std::vector<size_t> linear_correction_variables,
                                                                double thresh,
-                                                               size_t maxit) :
+                                                               int maxit) :
         alpha(alpha),
         lambdas(lambdas),
         weight_penalty(weight_penalty),
@@ -60,7 +58,7 @@ std::vector<double> LocalLinearPredictionStrategy2::predict(
       size_t index = it.first;
       double weight = it.second;
       indices[i] = index;
-      weights_vec(i) = weight * num_nonzero_weights; // rescale weights to sum to the number of samples
+      weights_vec(i) = weight * num_nonzero_weights; // [[ TODO ]]  can probably drop the multiplication by num_nonzero_weights since glmnet rescales internally
       i++;
     }
   }
@@ -75,10 +73,18 @@ std::vector<double> LocalLinearPredictionStrategy2::predict(
     Y(i) = train_data.get_outcome(indices[i]);
   }
 
-  int num_lambdas = lambdas.size(); // [[ TODO ]] int or size_t?
+  int num_lambdas = lambdas.size();
   std::vector<double> predictions(num_lambdas);
-  ElnetWrap::wrap(predictions, alpha, X, Y, weights_vec, num_lambdas, lambdas, weight_penalty, thresh, (int) maxit); // [[ TODO ]] make maxit int?
-
+  ElnetFitter::fit(predictions,
+                   X,
+                   Y,
+                   weights_vec,
+                   alpha,
+                   num_lambdas,
+                   lambdas,
+                   thresh,
+                   weight_penalty,
+                   maxit);
   return predictions;
 }
 
@@ -107,16 +113,16 @@ std::vector<double> LocalLinearPredictionStrategy2::compute_variance(
   std::vector<size_t> indices(num_nonzero_weights);
 
   Eigen::MatrixXd weights_vec = Eigen::VectorXd::Zero(num_nonzero_weights);
-    {
-      size_t i = 0;
-      for (const auto& it : weights_by_sampleID) {
-        size_t index = it.first;
-        double weight = it.second;
-        indices[i] = index;
-        sample_index_map[index] = i;
-        weights_vec(i) = weight;
-        i++;
-      }
+  {
+    size_t i = 0;
+    for (const auto& it : weights_by_sampleID) {
+      size_t index = it.first;
+      double weight = it.second;
+      indices[i] = index;
+      sample_index_map[index] = i;
+      weights_vec(i) = weight;
+      i++;
+    }
   }
 
   Eigen::MatrixXd X (num_nonzero_weights, num_variables+1);

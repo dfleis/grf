@@ -14,12 +14,10 @@
   You should have received a copy of the GNU General Public License
   along with grf. If not, see <http://www.gnu.org/licenses/>.
  #-------------------------------------------------------------------------------*/
-
 #ifndef GRF_LOCALLINEARPREDICTIONSTRATEGY2_H
 #define GRF_LOCALLINEARPREDICTIONSTRATEGY2_H
 
-// [[ TODO check if these includes are all still necessary]]
-#include <cstddef>
+#include <cstddef> // [[ TODO check if these includes are all still necessary]]
 #include <unordered_map>
 #include "Eigen/Dense"
 #include "commons/Data.h"
@@ -34,11 +32,11 @@ class LocalLinearPredictionStrategy2 final: public DefaultPredictionStrategy {
 
 public:
     LocalLinearPredictionStrategy2(double alpha,
-                                      std::vector<double> lambdas,
-                                      bool weight_penalty,
-                                      std::vector<size_t> linear_correction_variables,
-                                      double thresh,
-                                      size_t maxit);
+                                   std::vector<double> lambdas,
+                                   bool weight_penalty,
+                                   std::vector<size_t> linear_correction_variables,
+                                   double thresh,
+                                   int maxit);
 
     size_t prediction_length() const;
 
@@ -46,7 +44,7 @@ public:
     * LocalLinearPredictionStrategy2::predict computes a regularization path.
     *
     * Lambdas is a set of potential regularization parameters, and the forest will
-    *   output predictions along each of these parameters.
+    * output predictions along each of these parameters.
     */
     std::vector<double> predict(size_t sampleID,
                                 const std::unordered_map<size_t, double>& weights_by_sampleID,
@@ -67,7 +65,7 @@ private:
     bool weight_penalty;
     std::vector<size_t> linear_correction_variables;
     double thresh;
-    size_t maxit;
+    int maxit;
     ObjectiveBayesDebiaser bayes_debiaser;
 };
 
