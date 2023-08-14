@@ -58,7 +58,7 @@ std::vector<double> LocalLinearPredictionStrategy2::predict(
       size_t index = it.first;
       double weight = it.second;
       indices[i] = index;
-      weights_vec(i) = weight;
+      weights_vec(i) = weight * num_nonzero_weights;
       i++;
     }
   }
