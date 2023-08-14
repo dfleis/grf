@@ -54,14 +54,6 @@
  *    Eigen::Map<Eigen::VectorXd> alm -- Size-[nlam] vector to track internally-created lambda sequence.
  *    int nlp -- Total number of coordinate descent passes over the data, summed over all lambda values.
  *    int jerr -- Error flag.
- *
- *
- *
- *
- *
- *
- *
- *
  #-------------------------------------------------------------------------------*/
 #include <cstddef> // [[ TODO ]] check if these libraries are all still required
 #include <cmath>
@@ -104,11 +96,9 @@ inline void check_jerr(int n, int maxit, int pmax) {
   }
 }
 
-
-
 namespace grf {
 
-struct ElnetFitter {
+struct ElnetWrapper {
 private:
   static const bool RESCALE_PREDICTORS = false;
   static const bool CENTER_PREDICTORS = true;
@@ -124,8 +114,8 @@ public:
                   double thresh,
                   bool weight_penalty,
                   int maxit) {
-    if (w.size() == 1) { // glmnet doesn't handle the trivial case of a single observation
-      for (int i = 0; i < preds.size(); i++) { // is there a more idiomatic way of filling a std::vector?
+    if (w.size() == 1) { // glmnet doesn't handle the case of a single observation
+      for (int i = 0; i < preds.size(); i++) { 
         preds[i] = y(0);
       }
       return;
@@ -224,7 +214,6 @@ public:
     run(f, jerr);
     check_jerr(jerr, maxit, pmax);
     if (lmu < 1) Rcpp::warning("An empty model has been returned; probably a convergence issue.");
-
   }
 
 };

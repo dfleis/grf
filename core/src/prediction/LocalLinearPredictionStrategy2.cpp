@@ -21,7 +21,7 @@
 #include "commons/Data.h"
 #include "commons/elnet_wrap/elnet_wrap.hpp"
 #include "prediction/LocalLinearPredictionStrategy2.h"
-
+ 
 namespace grf {
 
 LocalLinearPredictionStrategy2::LocalLinearPredictionStrategy2(double alpha,
@@ -58,11 +58,10 @@ std::vector<double> LocalLinearPredictionStrategy2::predict(
       size_t index = it.first;
       double weight = it.second;
       indices[i] = index;
-      weights_vec(i) = weight * num_nonzero_weights; // [[ TODO ]]  can probably drop the multiplication by num_nonzero_weights since glmnet rescales internally
+      weights_vec(i) = weight;
       i++;
     }
   }
-
   Eigen::MatrixXd X(num_nonzero_weights, num_variables);
   Eigen::VectorXd Y(num_nonzero_weights);
   for (size_t i = 0; i < num_nonzero_weights; ++i) {
@@ -72,24 +71,24 @@ std::vector<double> LocalLinearPredictionStrategy2::predict(
     }
     Y(i) = train_data.get_outcome(indices[i]);
   }
-
+  
   int num_lambdas = lambdas.size();
   std::vector<double> predictions(num_lambdas);
-  ElnetFitter::fit(predictions,
-                   X,
-                   Y,
-                   weights_vec,
-                   alpha,
-                   num_lambdas,
-                   lambdas,
-                   thresh,
-                   weight_penalty,
-                   maxit);
+  ElnetWrapper::fit(predictions,
+                    X,
+                    Y,
+                    weights_vec,
+                    alpha,
+                    num_lambdas,
+                    lambdas,
+                    thresh,
+                    weight_penalty,
+                    maxit);
   return predictions;
 }
 
 /*
- * TODO:
+ * [[ TODO ]]:
  *  * Save the elastic net version of this for later. Probably will be a fairly straightforward tweak once the prediction function
  *  * Is there a natural way to implement LocalLinearPredictionStrategy2 (and LocalLinearPredictionStrategy, for that matter) under
  *    OptimizedPredictionStrategy, rather than DefaultPredictionStrategy? It's not immediately clear to me that it should be so easy.
