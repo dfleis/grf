@@ -12,7 +12,8 @@ tune_ll_regression_forest2(
   num.threads = NULL,
   lambda.path = NULL,
   thresh = 1e-07,
-  maxit = 1000
+  maxit = 1e+05,
+  ...
 )
 }
 \arguments{
@@ -36,9 +37,9 @@ automatically selects an appropriate amount.}
 
 \item{thresh}{Convergence threshold for coordinate descent. Each coordinate descent loop continues until the
 maximum change in the objective after any coefficient update is less than \code{thresh} times
-the null deviance. Default \code{1E-10}.}
+the null deviance.}
 
-\item{maxit}{Maximum number of passes over the data for all lambda values. Default \code{1E5}.}
+\item{maxit}{Maximum number of passes over the data for all lambda values.}
 }
 \value{
 A list of lambdas tried, corresponding errors, and optimal ridge penalty lambda.

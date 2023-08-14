@@ -23,6 +23,10 @@
 #include "forest/ForestTrainers.h"
 #include "RcppUtilities.h"
 
+// TESTING
+#include <unistd.h> // sleep
+
+
 using namespace grf;
 
 // [[Rcpp::export]]
@@ -230,7 +234,7 @@ Rcpp::List ll_regression_predict_oob2(const Rcpp::List& forest_object,
                                       double thresh,
                                       int maxit) {
   Data data = RcppUtilities::convert_data(train_matrix);
-  data.set_outcome_index(outcome_index);
+  data.set_outcome_index(outcome_index); sleep(1);
 
   Forest deserialized_forest = RcppUtilities::deserialize_forest(forest_object);
 

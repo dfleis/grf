@@ -8,7 +8,7 @@
   object,
   newdata = NULL,
   linear.correction.variables = NULL,
-  ll.elnet.alpha = 0,
+  ll.elnet.alpha = NULL,
   ll.lambda = NULL,
   ll.weight.penalty = FALSE,
   num.threads = NULL,
@@ -51,9 +51,9 @@ automatically selects an appropriate amount.}
 
 \item{thresh}{Convergence threshold for coordinate descent. Each coordinate descent loop continues until the
 maximum change in the objective after any coefficient update is less than \code{thresh} times
-the null deviance. Default \code{1E-10}.}
+the null deviance.}
 
-\item{maxit}{Maximum number of passes over the data for all lambda values. Default \code{1E5}.}
+\item{maxit}{Maximum number of passes over the data for all lambda values.}
 
 \item{...}{Additional arguments (currently ignored).}
 }

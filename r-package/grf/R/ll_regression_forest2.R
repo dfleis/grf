@@ -99,8 +99,6 @@ ll_regression_forest2 <- function(X, Y,
                                   tune.num.draws = 1000,
                                   num.threads = NULL,
                                   seed = runif(1, 0, .Machine$integer.max)) {
-  if (enable.ll.split) stop("elastic net splits not yet implemented.")
-
   has.missing.values <- validate_X(X)
   Y <- validate_observations(Y, X)
   clusters <- validate_clusters(clusters, X)
@@ -240,8 +238,8 @@ ll_regression_forest2 <- function(X, Y,
 #'                          (for confidence intervals).
 #' @param thresh Convergence threshold for coordinate descent. Each coordinate descent loop continues until the
 #'               maximum change in the objective after any coefficient update is less than \code{thresh} times
-#'               the null deviance. Default \code{1E-10}.
-#' @param maxit Maximum number of passes over the data for all lambda values. Default \code{1E5}.
+#'               the null deviance.
+#' @param maxit Maximum number of passes over the data for all lambda values.
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return A vector of predictions.
@@ -268,13 +266,13 @@ ll_regression_forest2 <- function(X, Y,
 #' @export
 predict.ll_regression_forest2 <- function(object, newdata = NULL,
                                           linear.correction.variables = NULL,
-                                          ll.elnet.alpha = 0,
+                                          ll.elnet.alpha = NULL,
                                           ll.lambda = NULL,
                                           ll.weight.penalty = FALSE,
                                           num.threads = NULL,
                                           estimate.variance = FALSE,
-                                          thresh = 1e-07, # glmnet default = 1e-07
-                                          maxit = 1e5,    # glmnet default = 1e5
+                                          thresh = 1e-07,
+                                          maxit = 1e5,
                                           ...) {
   num.threads <- validate_num_threads(num.threads)
   forest.short <- object[-which(names(object) == "X.orig")]
@@ -285,23 +283,15 @@ predict.ll_regression_forest2 <- function(object, newdata = NULL,
   thresh <- validate_ll_thresh(thresh)
   maxit <- validate_ll_maxit(maxit)
 
-  if (ll.lambda == 0) warning("[[ TODO ]] some useful warning about how estimates are highly",
-                              " unstable when lambda = 0 (or sufficiently small)",
-                              " with n small, and possible num.trees small (the prediction",
-                              " regressions within each leaf will be singular. current grf::ll_regression_forest",
-                              " predictions don't crash since the C++ Eigen::ldlt(...)",
-                              " solver gives some sort of result in the case of singular M",
-                              " and glmnet doesn't crash but clearly gives unstable estimates.")
-
-
   linear.correction.variables <- validate_ll_vars(linear.correction.variables, ncol(X))
   if (is.null(ll.lambda)) {
-    stop("[[ TODO ]]: implement and test tune_ll_regression_forest for the elastic net solver")
     ll.regularization.path <- tune_ll_regression_forest2(object,
                                                          linear.correction.variables,
                                                          ll.elnet.alpha,
                                                          ll.weight.penalty,
-                                                         num.threads)
+                                                         num.threads,
+                                                         thresh,
+                                                         maxit)
     ll.lambda <- ll.regularization.path$lambda.min
   } else {
     ll.lambda <- validate_ll_lambda(ll.lambda)
@@ -325,7 +315,6 @@ predict.ll_regression_forest2 <- function(object, newdata = NULL,
   } else {
     ret <- do.call.rcpp(ll_regression_predict_oob2, c(train.data, args))
   }
-
   ret[["ll.lambda"]] <- ll.lambda
 
   # Convert list to data frame.

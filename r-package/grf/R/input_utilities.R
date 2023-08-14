@@ -132,14 +132,15 @@ validate_ll_vars <- function(linear.correction.variables, num.cols) {
 }
 
 validate_ll_elnet_alpha <- function(elnet.alpha) {
+  if (is.null(elnet.alpha) || !is.numeric(elnet.alpha) || length(elnet.alpha) > 1)
+    stop("elnet.alpha must be a scalar.")
+
   if (elnet.alpha > 1) {
     warning("elnet.alpha > 1; setting to 1")
     elnet.alpha <- 1
   } else if (elnet.alpha < 0) {
     warning("elnet.alpha < 0; setting to 0")
     elnet.alpha <- 0
-  } else if (!is.numeric(elnet.alpha) || length(elnet.alpha) > 1) {
-    stop("elnet.alpha must be a scalar.")
   }
   elnet.alpha
 }
@@ -342,6 +343,5 @@ validate_ll_maxit <- function(maxit) {
   }
   ceiling(maxit)
 }
-
 
 

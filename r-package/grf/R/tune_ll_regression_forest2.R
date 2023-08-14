@@ -16,8 +16,8 @@
 #' @param lambda.path Optional list of lambdas to use for cross-validation.
 #' @param thresh Convergence threshold for coordinate descent. Each coordinate descent loop continues until the
 #'               maximum change in the objective after any coefficient update is less than \code{thresh} times
-#'               the null deviance. Default \code{1E-10}.
-#' @param maxit Maximum number of passes over the data for all lambda values. Default \code{1E5}.
+#'               the null deviance.
+#' @param maxit Maximum number of passes over the data for all lambda values.
 #' @return A list of lambdas tried, corresponding errors, and optimal ridge penalty lambda.
 #'
 #' @keywords internal
@@ -28,8 +28,8 @@ tune_ll_regression_forest2 <- function(forest,
                                        num.threads = NULL,
                                        lambda.path = NULL,
                                        thresh = 1e-07,
-                                       maxit = 1e3) {
-  warning("tune_ll_regression_forest2 not yet implemented for TEST")
+                                       maxit = 1e5,
+                                       ...) {
   forest.short <- forest[-which(names(forest) == "X.orig")]
   X <- forest[["X.orig"]]
   Y <- forest[["Y.orig"]]
@@ -39,6 +39,8 @@ tune_ll_regression_forest2 <- function(forest,
   num.threads <- validate_num_threads(num.threads)
   linear.correction.variables <- validate_ll_vars(linear.correction.variables, ncol(X))
   ll.elnet.alpha <- validate_ll_elnet_alpha(ll.elnet.alpha)
+  thresh <- validate_ll_thresh(thresh)
+  maxit <- validate_ll_maxit(maxit)
   ll.lambda <- validate_ll_path(lambda.path)
 
   # Subtract 1 to account for C++ indexing
