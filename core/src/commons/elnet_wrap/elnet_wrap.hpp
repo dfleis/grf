@@ -149,7 +149,8 @@ public:
     cl.colwise() = Eigen::Map<Eigen::VectorXd>(cl_col.data(), cl_col.size());
     int ne = dfmax;
     int nx = pmax;
-    double flmin = nlam > 1 ? lambda_min_ratio : 1.0;
+    // double flmin = nlam > 1 ? lambda_min_ratio : 1.0;
+    double flmin = 1.0; // when lambda is specified, set flmin to 1.0
 
     // initialize & format empty data structures for the glmnetpp elastic net driver
     // [[ TODO ]] might make more sense to do this outside of the wrapper to avoid re-allocations

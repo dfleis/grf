@@ -43,6 +43,11 @@ tune_ll_regression_forest2 <- function(forest,
   maxit <- validate_ll_maxit(maxit)
   ll.lambda <- validate_ll_path(lambda.path)
 
+  #------------
+  # [[ TODO ]] glmnet expects the lambdas to be in descending order (important for active set screening)
+  ll.lambda <- rev(sort(ll.lambda))
+  #------------
+
   # Subtract 1 to account for C++ indexing
   linear.correction.variables <- linear.correction.variables - 1
 
