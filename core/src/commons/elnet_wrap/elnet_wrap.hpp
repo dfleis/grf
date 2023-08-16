@@ -58,12 +58,18 @@
 #include <cstddef> // [[ TODO ]] check if these libraries are all still required
 #include <cmath>
 #include <string>
+ 
 #include <RcppEigen.h>
-#include "glmnetpp_bits/glmnetpp"
 #include <R.h>
 #include <Rinternals.h>
+ 
+#include "glmnetpp_bits/glmnetpp"
 #include "driver.h"
 #include "internal.h"
+ 
+// TESTING
+#include <unistd.h>
+#include <iostream>
 
 using namespace Rcpp;
 
@@ -79,7 +85,7 @@ inline void check_jerr(int n, int maxit, int pmax) {
     else if (n == 7777) msg += "All used predictions have zero variance";
     else if (n == 10000) msg += "All penalty factors are <= 0.";
     else msg += "Unknown error.";
-    Rcpp::stop(msg);
+    Rcpp::stop((msg + "\n").c_str());
   } else if (n < 0) { // non-fatal error
     if (n > -10000) {
       msg += "Convergence for " + std::to_string(-n) +
@@ -92,7 +98,7 @@ inline void check_jerr(int n, int maxit, int pmax) {
         "th lambda value; solutions " +
         "for larger lambdas returned";
     }
-    Rcpp::warning(msg);
+    REprintf((msg + "\n").c_str());
   }
 }
 
@@ -143,10 +149,11 @@ public:
     cl.colwise() = Eigen::Map<Eigen::VectorXd>(cl_col.data(), cl_col.size());
     int ne = dfmax;
     int nx = pmax;
-    double flmin = nlam > 1 ? lambda_min_ratio : 1;
+    double flmin = nlam > 1 ? lambda_min_ratio : 1.0;
 
-    // format empty data structures for glmnetpp
+    // initialize & format empty data structures for the glmnetpp elastic net driver
     // [[ TODO ]] might make more sense to do this outside of the wrapper to avoid re-allocations
+    // [[ TODO ]] or possibly a set of static variables/constants defined outside of this function
     Eigen::Map<Eigen::VectorXd> ulam(lambdas.data(), lambdas.size());
     Eigen::Map<Eigen::VectorXd> a0(preds.data(), preds.size()); // convert
     int lmu = 0;
@@ -158,12 +165,12 @@ public:
     int nlp = 0;
     int jerr = 0;
 
-    // glmnet validates y prior to the C++ code, see the 'null deviance' section
+    // prior to entering the C++ source, glmnet ensures that the null deviance > 0
     // https://github.com/cran/glmnet/blob/e85bab25e05c0d33095d71dcd114328ca25128eb/R/elnet.R
     double ybar = (y.array() * w.array()).sum() / w.size();
     double sdy = std::sqrt( (((y.array() - ybar).abs2() * w.array()).sum()) / w.size());
-    if (sdy == 0) Rcpp::stop("y is constant within a leaf; gaussian glmnet fails at the standardization step."); // nulldev == 0
-
+    if (sdy == 0) Rcpp::stop("y is constant within a leaf; Gaussian glmnet fails at the standardization step.\n"); 
+    
     // compute normalization & penalty factors to be consistent with the existing grf implementation (corresponding to ridge/alpha = 0)
     // We only compute the M matrix to be consistent with the existing LLR method (with alpha = 0 for ridge). Surely, we can do some other normalization
     // that won't require us to compute an otherwise unnecessary product? Note that the X used below is the local X - x0, but not the fully mean-centered matrix.
@@ -177,8 +184,8 @@ public:
       penalty_factor = M.diagonal().array() / normalization;
     }
     ulam = ulam.array() * sdy * normalization; // divide lambda by sd(Y) to rescale glmnet ridge outputs to correspond to grf's ridge model
-
-    // setup and call the glmnetpp elastic net solver for gaussian + nonsparse models
+    
+    // setup and call the glmnetpp elastic net solver for gaussian models and nonsparse predictor matrix
     using elnet_driver_t = glmnetpp::ElnetDriver<glmnetpp::util::glm_type::gaussian>;
     elnet_driver_t driver;
     auto f = [&]() {
@@ -213,7 +220,7 @@ public:
     };
     run(f, jerr);
     check_jerr(jerr, maxit, pmax);
-    if (lmu < 1) Rcpp::warning("An empty model has been returned; probably a convergence issue.");
+    if (lmu < 1) REprintf("An empty model has been returned; probably a convergence issue.\n");
   }
 
 };
