@@ -133,6 +133,10 @@ ll_regression_predict_oob <- function(forest_object, train_matrix, outcome_index
     .Call('_grf_ll_regression_predict_oob', PACKAGE = 'grf', forest_object, train_matrix, outcome_index, ll_lambda, ll_weight_penalty, linear_correction_variables, num_threads, estimate_variance)
 }
 
+ll_regression_train2 <- function(train_matrix, outcome_index, ll_split_lambda, ll_split_weight_penalty, ll_split_variables, ll_split_cutoff, overall_beta, mtry, num_trees, min_node_size, sample_fraction, honesty, honesty_fraction, honesty_prune_leaves, ci_group_size, alpha, imbalance_penalty, clusters, samples_per_cluster, num_threads, seed) {
+    .Call('_grf_ll_regression_train2', PACKAGE = 'grf', train_matrix, outcome_index, ll_split_lambda, ll_split_weight_penalty, ll_split_variables, ll_split_cutoff, overall_beta, mtry, num_trees, min_node_size, sample_fraction, honesty, honesty_fraction, honesty_prune_leaves, ci_group_size, alpha, imbalance_penalty, clusters, samples_per_cluster, num_threads, seed)
+}
+
 ll_regression_predict2 <- function(forest_object, train_matrix, outcome_index, test_matrix, ll_elnet_alpha, ll_lambda, ll_weight_penalty, linear_correction_variables, num_threads, estimate_variance, thresh, maxit) {
     .Call('_grf_ll_regression_predict2', PACKAGE = 'grf', forest_object, train_matrix, outcome_index, test_matrix, ll_elnet_alpha, ll_lambda, ll_weight_penalty, linear_correction_variables, num_threads, estimate_variance, thresh, maxit)
 }

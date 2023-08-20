@@ -23,10 +23,6 @@
 #include "forest/ForestTrainers.h"
 #include "RcppUtilities.h"
 
-// TESTING
-#include <unistd.h> // sleep
-
-
 using namespace grf;
 
 // [[Rcpp::export]]
@@ -190,6 +186,42 @@ Rcpp::List ll_regression_predict_oob(const Rcpp::List& forest_object,
 }
 
 // [[Rcpp::export]]
+Rcpp::List ll_regression_train2(const Rcpp::NumericMatrix& train_matrix,
+                                size_t outcome_index,
+                                double ll_split_lambda,
+                                bool ll_split_weight_penalty,
+                                std::vector<size_t> ll_split_variables,
+                                size_t ll_split_cutoff,
+                                std::vector<double> overall_beta,
+                                unsigned int mtry,
+                                unsigned int num_trees,
+                                unsigned int min_node_size,
+                                double sample_fraction,
+                                bool honesty,
+                                double honesty_fraction,
+                                bool honesty_prune_leaves,
+                                size_t ci_group_size,
+                                double alpha,
+                                double imbalance_penalty,
+                                std::vector<size_t> clusters,
+                                unsigned int samples_per_cluster,
+                                unsigned int num_threads,
+                                unsigned int seed) {
+  ForestTrainer trainer = ll_regression_trainer2(ll_split_lambda, ll_split_weight_penalty, overall_beta,
+                                                 ll_split_cutoff, ll_split_variables);
+
+  Data data = RcppUtilities::convert_data(train_matrix);
+  data.set_outcome_index(outcome_index);
+
+  ForestOptions options(num_trees, ci_group_size, sample_fraction, mtry, min_node_size, honesty,
+                        honesty_fraction, honesty_prune_leaves, alpha, imbalance_penalty, num_threads, seed, clusters, samples_per_cluster);
+  Forest forest = trainer.train(data, options);
+
+  std::vector<Prediction> predictions;
+  return RcppUtilities::create_forest_object(forest, predictions);
+}
+
+// [[Rcpp::export]]
 Rcpp::List ll_regression_predict2(const Rcpp::List& forest_object,
                                   const Rcpp::NumericMatrix& train_matrix,
                                   size_t outcome_index,
@@ -234,7 +266,7 @@ Rcpp::List ll_regression_predict_oob2(const Rcpp::List& forest_object,
                                       double thresh,
                                       int maxit) {
   Data data = RcppUtilities::convert_data(train_matrix);
-  data.set_outcome_index(outcome_index); sleep(1);
+  data.set_outcome_index(outcome_index);
 
   Forest deserialized_forest = RcppUtilities::deserialize_forest(forest_object);
 
@@ -250,3 +282,5 @@ Rcpp::List ll_regression_predict_oob2(const Rcpp::List& forest_object,
 
   return result;
 }
+
+

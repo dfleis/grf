@@ -45,6 +45,12 @@ ForestTrainer ll_regression_trainer(double split_lambda,
                                    size_t ll_split_cutoff,
                                    std::vector<size_t> ll_split_variables);
 
+ForestTrainer ll_regression_trainer2(double split_lambda,
+                                     bool weight_penalty,
+                                     const std::vector<double>& overall_beta,
+                                     size_t ll_split_cutoff,
+                                     std::vector<size_t> ll_split_variables);
+
 ForestTrainer survival_trainer();
 
 ForestTrainer causal_survival_trainer(bool stabilize_splits);

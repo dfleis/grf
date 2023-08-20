@@ -139,6 +139,7 @@ ll_regression_forest2 <- function(X, Y,
                seed = seed)
   if (enable.ll.split && ll.split.cutoff > 0) {
     # find overall beta
+    warning("[[ TODO ]] Make C++ binding calling the internal elnet function.")
     J <- diag(ncol(X) + 1)
     J[1,1] <- 0
     D <- cbind(1, as.matrix(X))
@@ -190,8 +191,7 @@ ll_regression_forest2 <- function(X, Y,
   }
 
   if (enable.ll.split) {
-    stop("[[ TODO ]] elastic net splitting rule not yet implemented for forest training.")
-    forest <- do.call.rcpp(ll_regression_train, c(data, args))
+    forest <- do.call.rcpp(ll_regression_train2, c(data, args))
   } else {
     forest <- do.call.rcpp(regression_train, c(data, args))
   }
