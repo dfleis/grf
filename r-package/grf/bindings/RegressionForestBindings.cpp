@@ -188,6 +188,7 @@ Rcpp::List ll_regression_predict_oob(const Rcpp::List& forest_object,
 // [[Rcpp::export]]
 Rcpp::List ll_regression_train2(const Rcpp::NumericMatrix& train_matrix,
                                 size_t outcome_index,
+                                double ll_elnet_alpha,
                                 double ll_split_lambda,
                                 bool ll_split_weight_penalty,
                                 std::vector<size_t> ll_split_variables,
@@ -203,12 +204,20 @@ Rcpp::List ll_regression_train2(const Rcpp::NumericMatrix& train_matrix,
                                 size_t ci_group_size,
                                 double alpha,
                                 double imbalance_penalty,
+                                double thresh,
+                                int maxit,
                                 std::vector<size_t> clusters,
                                 unsigned int samples_per_cluster,
                                 unsigned int num_threads,
                                 unsigned int seed) {
-  ForestTrainer trainer = ll_regression_trainer2(ll_split_lambda, ll_split_weight_penalty, overall_beta,
-                                                 ll_split_cutoff, ll_split_variables);
+  ForestTrainer trainer = ll_regression_trainer2(ll_elnet_alpha,
+                                                 ll_split_lambda,
+                                                 ll_split_weight_penalty,
+                                                 overall_beta,
+                                                 ll_split_cutoff,
+                                                 ll_split_variables,
+                                                 thresh,
+                                                 maxit);
 
   Data data = RcppUtilities::convert_data(train_matrix);
   data.set_outcome_index(outcome_index);

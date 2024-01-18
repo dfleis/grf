@@ -76,30 +76,29 @@
 #'
 #' @export
 ll_regression_forest <- function(X, Y,
-                                enable.ll.split = FALSE,
-                                ll.split.weight.penalty = FALSE,
-                                ll.split.lambda = 0.1,
-                                ll.split.variables = NULL,
-                                ll.split.cutoff = NULL,
-                                num.trees = 2000,
-                                clusters = NULL,
-                                equalize.cluster.weights = FALSE,
-                                sample.fraction = 0.5,
-                                mtry = min(ceiling(sqrt(ncol(X)) + 20), ncol(X)),
-                                min.node.size = 5,
-                                honesty = TRUE,
-                                honesty.fraction = 0.5,
-                                honesty.prune.leaves = TRUE,
-                                alpha = 0.05,
-                                imbalance.penalty = 0,
-                                ci.group.size = 2,
-                                tune.parameters = "none",
-                                tune.num.trees = 50,
-                                tune.num.reps = 100,
-                                tune.num.draws = 1000,
-                                num.threads = NULL,
-                                seed = runif(1, 0, .Machine$integer.max)) {
-
+                                 enable.ll.split = FALSE,
+                                 ll.split.weight.penalty = FALSE,
+                                 ll.split.lambda = 0.1,
+                                 ll.split.variables = NULL,
+                                 ll.split.cutoff = NULL,
+                                 num.trees = 2000,
+                                 clusters = NULL,
+                                 equalize.cluster.weights = FALSE,
+                                 sample.fraction = 0.5,
+                                 mtry = min(ceiling(sqrt(ncol(X)) + 20), ncol(X)),
+                                 min.node.size = 5,
+                                 honesty = TRUE,
+                                 honesty.fraction = 0.5,
+                                 honesty.prune.leaves = TRUE,
+                                 alpha = 0.05,
+                                 imbalance.penalty = 0,
+                                 ci.group.size = 2,
+                                 tune.parameters = "none",
+                                 tune.num.trees = 50,
+                                 tune.num.reps = 100,
+                                 tune.num.draws = 1000,
+                                 num.threads = NULL,
+                                 seed = runif(1, 0, .Machine$integer.max)) {
   has.missing.values <- validate_X(X)
   Y <- validate_observations(Y, X)
   clusters <- validate_clusters(clusters, X)
@@ -138,6 +137,7 @@ ll_regression_forest <- function(X, Y,
                ci.group.size = ci.group.size,
                num.threads = num.threads,
                seed = seed)
+
   if (enable.ll.split && ll.split.cutoff > 0) {
     # find overall beta
     J <- diag(ncol(X) + 1)

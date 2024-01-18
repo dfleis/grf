@@ -13,8 +13,8 @@
   ll.weight.penalty = FALSE,
   num.threads = NULL,
   estimate.variance = FALSE,
-  thresh = 1e-07,
-  maxit = 1e+05,
+  thresh = NULL,
+  maxit = NULL,
   ...
 )
 }
@@ -36,7 +36,8 @@ prediction considerably. Defaults to NULL.}
 \item{ll.elnet.alpha}{The elastic net mixing parameter, a proportion bound within 0 and 1. The parameter \code{ll.elnet.alpha}
 is defined as \eqn{\alpha} in the elastic net penalty parameterization
 \deqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1.} \code{alpha=1} is the lasso penalty,
-and \code{alpha=0} the ridge penalty.}
+and \code{alpha=0} the ridge penalty. By default, uses the value of \code{ll.elnet.alpha} used
+for training the forest.}
 
 \item{ll.lambda}{Ridge penalty for local linear predictions. Defaults to NULL and will be cross-validated.}
 
@@ -51,9 +52,10 @@ automatically selects an appropriate amount.}
 
 \item{thresh}{Convergence threshold for coordinate descent. Each coordinate descent loop continues until the
 maximum change in the objective after any coefficient update is less than \code{thresh} times
-the null deviance.}
+the null deviance. By default, uses the same value of \code{thresh} used for training the forest.}
 
-\item{maxit}{Maximum number of passes over the data for all lambda values.}
+\item{maxit}{Maximum number of passes over the data for all lambda values. By default, uses the same value of
+\code{maxit} used for training the forest.}
 
 \item{...}{Additional arguments (currently ignored).}
 }

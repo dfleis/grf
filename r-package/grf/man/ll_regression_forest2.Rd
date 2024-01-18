@@ -7,6 +7,7 @@
 ll_regression_forest2(
   X,
   Y,
+  ll.elnet.alpha = 0,
   enable.ll.split = FALSE,
   ll.split.weight.penalty = FALSE,
   ll.split.lambda = 0.1,
@@ -24,6 +25,8 @@ ll_regression_forest2(
   alpha = 0.05,
   imbalance.penalty = 0,
   ci.group.size = 2,
+  thresh = 1e-07,
+  maxit = 1e+05,
   tune.parameters = "none",
   tune.num.trees = 50,
   tune.num.reps = 100,
@@ -36,6 +39,11 @@ ll_regression_forest2(
 \item{X}{The covariates used in the regression.}
 
 \item{Y}{The outcome.}
+
+\item{ll.elnet.alpha}{The elastic net mixing parameter, a proportion bound within 0 and 1. The parameter \code{ll.elnet.alpha}
+is defined as \eqn{\alpha} in the elastic net penalty parameterization
+\deqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1.} \code{alpha=1} is the lasso penalty,
+and \code{alpha=0} the ridge penalty.}
 
 \item{enable.ll.split}{(experimental) Optional choice to make forest splits based on ridge residuals as opposed to
 standard CART splits. Defaults to FALSE.}
@@ -99,6 +107,12 @@ Only applies if honesty is enabled. Default is TRUE.}
 \item{ci.group.size}{The forest will grow ci.group.size trees on each subsample.
 In order to provide confidence intervals, ci.group.size must
 be at least 2. Default is 1.}
+
+\item{thresh}{Convergence threshold for coordinate descent. Each coordinate descent loop continues until the
+maximum change in the objective after any coefficient update is less than \code{thresh} times
+the null deviance.}
+
+\item{maxit}{Maximum number of passes over the data for all lambda values.}
 
 \item{tune.parameters}{If true, NULL parameters are tuned by cross-validation; if FALSE
 NULL parameters are set to defaults. Default is FALSE. Currently, local linear tuning

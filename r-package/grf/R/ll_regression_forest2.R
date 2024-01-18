@@ -5,6 +5,10 @@
 #'
 #' @param X The covariates used in the regression.
 #' @param Y The outcome.
+#' @param ll.elnet.alpha The elastic net mixing parameter, a proportion bound within 0 and 1. The parameter \code{ll.elnet.alpha}
+#'                       is defined as \eqn{\alpha} in the elastic net penalty parameterization
+#'                       \deqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1.} \code{alpha=1} is the lasso penalty,
+#'                       and \code{alpha=0} the ridge penalty.
 #' @param enable.ll.split (experimental) Optional choice to make forest splits based on ridge residuals as opposed to
 #'                        standard CART splits. Defaults to FALSE.
 #' @param ll.split.weight.penalty If using local linear splits, user can specify whether or not to use a
@@ -51,6 +55,10 @@
 #' @param ci.group.size The forest will grow ci.group.size trees on each subsample.
 #'                      In order to provide confidence intervals, ci.group.size must
 #'                      be at least 2. Default is 1.
+#' @param thresh Convergence threshold for coordinate descent. Each coordinate descent loop continues until the
+#'               maximum change in the objective after any coefficient update is less than \code{thresh} times
+#'               the null deviance.
+#' @param maxit Maximum number of passes over the data for all lambda values.
 #' @param tune.parameters If true, NULL parameters are tuned by cross-validation; if FALSE
 #'                        NULL parameters are set to defaults. Default is FALSE. Currently, local linear tuning
 #'                        is based on regression forest fit, and is only supported for `enable.ll.split = FALSE`.
@@ -76,6 +84,7 @@
 #'
 #' @export
 ll_regression_forest2 <- function(X, Y,
+                                  ll.elnet.alpha = 0,
                                   enable.ll.split = FALSE,
                                   ll.split.weight.penalty = FALSE,
                                   ll.split.lambda = 0.1,
@@ -93,6 +102,8 @@ ll_regression_forest2 <- function(X, Y,
                                   alpha = 0.05,
                                   imbalance.penalty = 0,
                                   ci.group.size = 2,
+                                  thresh = 1e-7,
+                                  maxit = 1e5,
                                   tune.parameters = "none",
                                   tune.num.trees = 50,
                                   tune.num.reps = 100,
@@ -105,9 +116,12 @@ ll_regression_forest2 <- function(X, Y,
   samples.per.cluster <- validate_equalize_cluster_weights(equalize.cluster.weights, clusters, NULL)
   num.threads <- validate_num_threads(num.threads)
 
+  ll.elnet.alpha <- validate_ll_elnet_alpha(ll.elnet.alpha)
   ll.split.variables <- validate_ll_vars(ll.split.variables, ncol(X))
   ll.split.lambda <- validate_ll_lambda(ll.split.lambda)
   ll.split.cutoff <- validate_ll_cutoff(ll.split.cutoff, nrow(X))
+  thresh <- validate_ll_thresh(thresh)
+  maxit <- validate_ll_maxit(maxit)
 
   all.tunable.params <- c("sample.fraction", "mtry", "min.node.size", "honesty.fraction",
                           "honesty.prune.leaves", "alpha", "imbalance.penalty")
@@ -137,26 +151,41 @@ ll_regression_forest2 <- function(X, Y,
                ci.group.size = ci.group.size,
                num.threads = num.threads,
                seed = seed)
+
   if (enable.ll.split && ll.split.cutoff > 0) {
     # find overall beta
     warning("[[ TODO ]] Make C++ binding calling the internal elnet function.")
-    J <- diag(ncol(X) + 1)
-    J[1,1] <- 0
-    D <- cbind(1, as.matrix(X))
-    overall.beta <- solve(t(D) %*% D + ll.split.lambda * J) %*% t(D) %*% Y
+    # quick and dirty invocation of glmnet (without even importing it into the
+    # package since this is really just a temporary measure before I use the
+    # internal glmnetpp source)
+    sdy <- sqrt(mean((Y - mean(Y))^2)) # rescale lambda so glmnet coefs match with grf
+    overall.fit <- glmnet::glmnet(X, Y,
+                                  alpha = ll.elnet.alpha,
+                                  lambda = ll.split.lambda * sdy / length(Y),
+                                  intercept = TRUE,
+                                  standardize = FALSE,
+                                  thresh = thresh,
+                                  maxit = maxit)
+    overall.beta <- as.numeric(coef(overall.fit))
 
     # update arguments with LLF parameters
-    args <- c(args, list(ll.split.weight.penalty = ll.split.weight.penalty,
+    args <- c(args, list(ll.elnet.alpha = ll.elnet.alpha,
+                         ll.split.weight.penalty = ll.split.weight.penalty,
                          ll.split.lambda = ll.split.lambda,
                          ll.split.variables = ll.split.variables,
                          ll.split.cutoff = ll.split.cutoff,
+                         thresh = thresh,
+                         maxit = maxit,
                          overall.beta = overall.beta))
   } else if (enable.ll.split) {
     # update arguments with LLF parameters
-    args <- c(args, list(ll.split.weight.penalty = ll.split.weight.penalty,
+    args <- c(args, list(ll.elnet.alpha = ll.elnet.alpha,
+                         ll.split.weight.penalty = ll.split.weight.penalty,
                          ll.split.lambda = ll.split.lambda,
                          ll.split.variables = ll.split.variables,
                          ll.split.cutoff = ll.split.cutoff,
+                         thresh = thresh,
+                         maxit = maxit,
                          overall.beta = vector(mode = "numeric", length = 0)))
   } else {
     args <- c(args, compute.oob.predictions = FALSE)
@@ -201,11 +230,14 @@ ll_regression_forest2 <- function(X, Y,
   forest[["ci.group.size"]] <- ci.group.size
   forest[["X.orig"]] <- X
   forest[["Y.orig"]] <- Y
+  forest[["ll.elnet.alpha"]] <- ll.elnet.alpha
   forest[["clusters"]] <- clusters
   forest[["equalize.cluster.weights"]] <- equalize.cluster.weights
   forest[["tunable.params"]] <- args[all.tunable.params]
   forest[["tuning.output"]] <- tuning.output
   forest[["has.missing.values"]] <- has.missing.values
+  forest[["thresh"]] <- thresh
+  forest[["maxit"]] <- maxit
 
   forest
 }
@@ -228,7 +260,8 @@ ll_regression_forest2 <- function(X, Y,
 #' @param ll.elnet.alpha The elastic net mixing parameter, a proportion bound within 0 and 1. The parameter \code{ll.elnet.alpha}
 #'                       is defined as \eqn{\alpha} in the elastic net penalty parameterization
 #'                       \deqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1.} \code{alpha=1} is the lasso penalty,
-#'                       and \code{alpha=0} the ridge penalty.
+#'                       and \code{alpha=0} the ridge penalty. By default, uses the value of \code{ll.elnet.alpha} used
+#'                       for training the forest.
 #' @param ll.lambda Ridge penalty for local linear predictions. Defaults to NULL and will be cross-validated.
 #' @param ll.weight.penalty Option to standardize ridge penalty by covariance (TRUE),
 #'                            or penalize all covariates equally (FALSE). Defaults to FALSE.
@@ -238,8 +271,9 @@ ll_regression_forest2 <- function(X, Y,
 #'                          (for confidence intervals).
 #' @param thresh Convergence threshold for coordinate descent. Each coordinate descent loop continues until the
 #'               maximum change in the objective after any coefficient update is less than \code{thresh} times
-#'               the null deviance.
-#' @param maxit Maximum number of passes over the data for all lambda values.
+#'               the null deviance. By default, uses the same value of \code{thresh} used for training the forest.
+#' @param maxit Maximum number of passes over the data for all lambda values. By default, uses the same value of
+#'              \code{maxit} used for training the forest.
 #' @param ... Additional arguments (currently ignored).
 #'
 #' @return A vector of predictions.
@@ -271,17 +305,31 @@ predict.ll_regression_forest2 <- function(object, newdata = NULL,
                                           ll.weight.penalty = FALSE,
                                           num.threads = NULL,
                                           estimate.variance = FALSE,
-                                          thresh = 1e-07,
-                                          maxit = 1e5,
+                                          thresh = NULL,
+                                          maxit = NULL,
                                           ...) {
   num.threads <- validate_num_threads(num.threads)
   forest.short <- object[-which(names(object) == "X.orig")]
   X <- object[["X.orig"]]
   train.data <- create_train_matrices(X, outcome = object[["Y.orig"]])
 
-  ll.elnet.alpha <- validate_ll_elnet_alpha(ll.elnet.alpha)
-  thresh <- validate_ll_thresh(thresh)
-  maxit <- validate_ll_maxit(maxit)
+  if (is.null(ll.elnet.alpha)) {
+    ll.elnet.alpha <- object[["ll.elnet.alpha"]]
+  } else {
+    ll.elnet.alpha <- validate_ll_elnet_alpha(ll.elnet.alpha)
+  }
+  if (is.null(thresh)) {
+    thresh <- object[["thresh"]]
+  } else {
+    thresh <- validate_ll_thresh(thresh)
+  }
+  if (is.null(maxit)) {
+    maxit <- object[["maxit"]]
+  } else {
+    maxit <- validate_ll_maxit(maxit)
+  }
+
+
 
   linear.correction.variables <- validate_ll_vars(linear.correction.variables, ncol(X))
   if (is.null(ll.lambda)) {
