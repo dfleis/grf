@@ -15,10 +15,12 @@ rank_average_treatment_effect.fit(
 )
 }
 \arguments{
-\item{DR.scores}{A vector with the evaluation set doubly robust scores.}
+\item{DR.scores}{A vector with the evaluation set scores.}
 
 \item{priorities}{Treatment prioritization scores S(Xi) for the units in the evaluation set.
-Two prioritization rules can be compared by supplying a two-column array or named list of priorities.
+Two prioritization rules can be compared by supplying a two-column array or named list of priorities
+(yielding paired standard errors that account for the correlation between RATE metrics estimated on
+the same evaluation data).
 WARNING: for valid statistical performance, these scores should be constructed independently from the evaluation
 dataset used to construct DR.scores.}
 
@@ -49,7 +51,7 @@ A list of class `rank_average_treatment_effect` with elements \itemize{
 }
 \description{
 Provides an optional interface to \code{\link{rank_average_treatment_effect}} which allows for user-supplied
-doubly robust scores for the evaluation set data.
+evaluation scores.
 }
 \examples{
 \donttest{
@@ -93,8 +95,8 @@ rate <- rank_average_treatment_effect.fit(DR.scores, priority.cate)
 
 # If the treatment randomization probabilities are known, then an alternative to
 # evaluation via doubly robust scores is to use inverse-propensity weighting.
-ipw.scores <- ifelse(W[-train] == 1, Y[-train]/0.5, -Y[-train]/0.5)
-rate.ipw <- rank_average_treatment_effect.fit(ipw.scores, priority.cate)
+IPW.scores <- ifelse(W[-train] == 1, Y[-train]/0.5, -Y[-train]/0.5)
+rate.ipw <- rank_average_treatment_effect.fit(IPW.scores, priority.cate)
 }
 
 }

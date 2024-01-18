@@ -10,7 +10,7 @@
 #'
 #' This forest fits a multi-arm treatment estimate following the multivariate
 #' extension of the "R-learner" suggested in Nie and Wager (2021), with kernel
-#' weights derived by the GRF algortim (Athey, Tibshirani, and Wager, 2019).
+#' weights derived by the GRF algorithm (Athey, Tibshirani, and Wager, 2019).
 #' In particular, with K arms, and W encoded as \{0, 1\}^(K-1), we estimate, for
 #' a target sample x, and a chosen baseline arm:
 #'
@@ -328,7 +328,7 @@ multi_arm_causal_forest <- function(X, Y, W,
 #'                matrix, and that the columns must appear in the same order.
 #' @param num.threads Number of threads used in training. If set to NULL, the software
 #'                    automatically selects an appropriate amount.
-#' @param estimate.variance Whether variance estimates for hat{tau}(x) are desired
+#' @param estimate.variance Whether variance estimates for \eqn{\hat\tau(x)} are desired
 #'                          (for confidence intervals). This option is currently
 #'                          only supported for univariate outcomes Y.
 #' @param drop If TRUE, coerce the prediction result to the lowest possible dimension. Default is FALSE.

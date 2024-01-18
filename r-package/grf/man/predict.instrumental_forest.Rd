@@ -24,7 +24,7 @@ matrix, and that the columns must appear in the same order.}
 \item{num.threads}{Number of threads used in training. If set to NULL, the software
 automatically selects an appropriate amount.}
 
-\item{estimate.variance}{Whether variance estimates for hat{tau}(x) are desired
+\item{estimate.variance}{Whether variance estimates for \eqn{\hat\tau(x)} are desired
 (for confidence intervals).}
 
 \item{...}{Additional arguments (currently ignored).}
@@ -50,6 +50,9 @@ iv.forest <- instrumental_forest(X, Y, W, Z)
 
 # Predict on out-of-bag training samples.
 iv.pred <- predict(iv.forest)
+
+# Estimate a (local) average treatment effect.
+average_treatment_effect(iv.forest)
 }
 
 }

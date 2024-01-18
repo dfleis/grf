@@ -64,6 +64,9 @@
 #'
 #' @return A trained local linear forest object.
 #'
+#' @references Friedberg, Rina, Julie Tibshirani, Susan Athey, and Stefan Wager. "Local Linear Forests".
+#'  Journal of Computational and Graphical Statistics, 30(2), 2020.
+#'
 #' @examples
 #' \donttest{
 #' # Train a standard regression forest.
@@ -230,7 +233,7 @@ ll_regression_forest <- function(X, Y,
 #'                            or penalize all covariates equally (FALSE). Defaults to FALSE.
 #' @param num.threads Number of threads used in training. If set to NULL, the software
 #'                    automatically selects an appropriate amount.
-#' @param estimate.variance Whether variance estimates for hat{tau}(x) are desired
+#' @param estimate.variance Whether variance estimates for \eqn{\hat\tau(x)} are desired
 #'                          (for confidence intervals).
 #' @param ... Additional arguments (currently ignored).
 #'

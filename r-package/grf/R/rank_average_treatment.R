@@ -1,6 +1,6 @@
 #' Estimate a Rank-Weighted Average Treatment Effect (RATE).
 #'
-#' Consider a rule S(Xi) assigning scores to units in decreasing order of treatment prioritization.
+#' Consider a rule \eqn{S(X_i)} assigning scores to units in decreasing order of treatment prioritization.
 #' In the case of a forest with binary treatment, we provide estimates of the following, where
 #' 1/n <= q <= 1 represents the fraction of treated units:
 #' \itemize{
@@ -8,17 +8,20 @@
 #'    \eqn{\int_{0}^{1} alpha(q) TOC(q; S) dq}, where alpha is a weighting method
 #'    corresponding to either `AUTOC` or `QINI`.
 #'   \item The Targeting Operating Characteristic (TOC):
-#'     \eqn{E[Y(1) - Y(0) | F(S(Xi)) >= 1 - q] - E[Y(1) - Y(0)]}, where F(.) is the distribution function of S(Xi).
+#'     \eqn{E[Y_i(1) - Y_i(0) | F(S(X_i)) \geq 1 - q] - E[Y_i(1) - Y_i(0)]},
+#'    where \eqn{F(\cdot)} is the distribution function of \eqn{S(X_i)}.
 #' }
 #' The Targeting Operating Characteristic (TOC) is a curve comparing the benefit of treating only a certain
-#' fraction q of units (as prioritized by S(Xi)), to the overall average treatment effect.
+#' fraction q of units (as prioritized by \eqn{S(X_i)}), to the overall average treatment effect.
 #' The Rank-Weighted Average Treatment Effect (RATE) is a weighted sum of this curve,
 #' and is a measure designed to identify prioritization rules that effectively targets treatment
 #' (and can thus be used to test for the presence of heterogeneous treatment effects).
 #'
 #' @param forest The evaluation set forest.
 #' @param priorities Treatment prioritization scores S(Xi) for the units used to train the evaluation forest.
-#'  Two prioritization rules can be compared by supplying a two-column array or named list of priorities.
+#'  Two prioritization rules can be compared by supplying a two-column array or named list of priorities
+#'  (yielding paired standard errors that account for the correlation between RATE metrics estimated on
+#'  the same evaluation data).
 #'  WARNING: for valid statistical performance, these scores should be constructed independently from the evaluation
 #'  forest training data.
 #' @param target The type of RATE estimate, options are "AUTOC" (exhibits greater power when only a small subset
@@ -132,6 +135,13 @@ rank_average_treatment_effect <- function(forest,
   if (any(forest$W.hat[subset] %in% c(0, 1))) {
     stop("Cannot compute a doubly robust estimate when some propensities are exactly zero or one.")
   }
+  if (min(forest$W.hat[subset]) <= 0.05 || max(forest$W.hat[subset]) >= 0.95) {
+    rng <- range(forest$W.hat[subset])
+    warning(paste("Estimated treatment propensities take values between",
+    round(rng[1], 3), "and", round(rng[2], 3),
+    "and in particular get very close to 0 or 1. In this case, using the `subset` argument on `forest$W.hat`",
+    "to filter data as in Crump, Hotz, Imbens, and Mitnik (Biometrika, 2009) may be helpful."))
+  }
   if (length(unique(subset.clusters)) <= 1) {
     stop("The specified subset must contain units from more than one cluster.")
   }
@@ -230,11 +240,13 @@ rank_average_treatment_effect <- function(forest,
 #' Fitter function for Rank-Weighted Average Treatment Effect (RATE).
 #'
 #' Provides an optional interface to \code{\link{rank_average_treatment_effect}} which allows for user-supplied
-#' doubly robust scores for the evaluation set data.
+#' evaluation scores.
 #'
-#' @param DR.scores A vector with the evaluation set doubly robust scores.
+#' @param DR.scores A vector with the evaluation set scores.
 #' @param priorities Treatment prioritization scores S(Xi) for the units in the evaluation set.
-#'  Two prioritization rules can be compared by supplying a two-column array or named list of priorities.
+#'  Two prioritization rules can be compared by supplying a two-column array or named list of priorities
+#'  (yielding paired standard errors that account for the correlation between RATE metrics estimated on
+#'  the same evaluation data).
 #'  WARNING: for valid statistical performance, these scores should be constructed independently from the evaluation
 #'  dataset used to construct DR.scores.
 #' @param target The type of RATE estimate, options are "AUTOC" (exhibits greater power when only a small subset
@@ -291,8 +303,8 @@ rank_average_treatment_effect <- function(forest,
 #'
 #' # If the treatment randomization probabilities are known, then an alternative to
 #' # evaluation via doubly robust scores is to use inverse-propensity weighting.
-#' ipw.scores <- ifelse(W[-train] == 1, Y[-train]/0.5, -Y[-train]/0.5)
-#' rate.ipw <- rank_average_treatment_effect.fit(ipw.scores, priority.cate)
+#' IPW.scores <- ifelse(W[-train] == 1, Y[-train]/0.5, -Y[-train]/0.5)
+#' rate.ipw <- rank_average_treatment_effect.fit(IPW.scores, priority.cate)
 #' }
 #'
 #' @return A list of class `rank_average_treatment_effect` with elements \itemize{

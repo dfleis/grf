@@ -38,7 +38,7 @@ or penalize all covariates equally (FALSE). Penalizes equally by default.}
 \item{num.threads}{Number of threads used in training. If set to NULL, the software
 automatically selects an appropriate amount.}
 
-\item{estimate.variance}{Whether variance estimates for hat{tau}(x) are desired
+\item{estimate.variance}{Whether variance estimates for \eqn{\hat\tau(x)} are desired
 (for confidence intervals).}
 
 \item{...}{Additional arguments (currently ignored).}
@@ -84,4 +84,15 @@ c.forest <- causal_forest(X, Y, W, num.trees = 500)
 c.pred <- predict(c.forest, X.test, estimate.variance = TRUE)
 }
 
+}
+\references{
+Friedberg, Rina, Julie Tibshirani, Susan Athey, and Stefan Wager. "Local Linear Forests".
+ Journal of Computational and Graphical Statistics, 30(2), 2020.
+
+Wager, Stefan, Trevor Hastie, and Bradley Efron.
+ "Confidence intervals for random forests: The jackknife and the infinitesimal jackknife."
+ The Journal of Machine Learning Research 15(1), 2014.
+
+Nie, Xinkun, and Stefan Wager. "Quasi-Oracle Estimation of Heterogeneous Treatment Effects".
+ Biometrika, 108(2), 2021.
 }
