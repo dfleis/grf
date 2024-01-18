@@ -14,21 +14,27 @@
   You should have received a copy of the GNU General Public License
   along with grf. If not, see <http://www.gnu.org/licenses/>.
  #-------------------------------------------------------------------------------*/
-
+#include "commons/elnet_wrap/elnet_wrap.hpp"
 #include "relabeling/LLRegressionRelabelingStrategy2.h"
 
 namespace grf {
 
-LLRegressionRelabelingStrategy2::LLRegressionRelabelingStrategy2(double split_lambda,
-                                                                bool weight_penalty,
-                                                                const std::vector<double>& overall_beta,
-                                                                size_t ll_split_cutoff,
-                                                                std::vector<size_t> ll_split_variables):
+LLRegressionRelabelingStrategy2::LLRegressionRelabelingStrategy2(double alpha,
+                                                                 double split_lambda,
+                                                                 bool weight_penalty,
+                                                                 const std::vector<double>& overall_beta,
+                                                                 size_t ll_split_cutoff,
+                                                                 std::vector<size_t> ll_split_variables,
+                                                                 double thresh,
+                                                                 int maxit):
+  alpha(alpha),
   split_lambda(split_lambda),
   weight_penalty(weight_penalty),
   overall_beta(overall_beta),
   ll_split_cutoff(ll_split_cutoff),
-  ll_split_variables(ll_split_variables){
+  ll_split_variables(ll_split_variables),
+  thresh(thresh),
+  maxit(maxit) {
 };
 
 bool LLRegressionRelabelingStrategy2::relabel(
@@ -44,7 +50,7 @@ bool LLRegressionRelabelingStrategy2::relabel(
   for (size_t i = 0; i < num_data_points; ++i) {
     for (size_t j = 0; j < num_variables; ++j) {
       size_t current_predictor = ll_split_variables[j];
-      X(i, j + 1) = data.get(samples[i],current_predictor);
+      X(i, j + 1) = data.get(samples[i], current_predictor);
     }
     Y(i) = data.get_outcome(samples[i]);
     X(i, 0) = 1;
@@ -52,16 +58,15 @@ bool LLRegressionRelabelingStrategy2::relabel(
 
   Eigen::MatrixXd leaf_predictions(num_data_points, 1);
 
-  if (num_data_points < ll_split_cutoff) {
+  if (num_data_points < ll_split_cutoff) { 
     // use overall beta for ridge predictions
-
     Eigen::MatrixXd eigen_beta(num_variables + 1, 1);
     for(size_t j = 0; j < num_variables + 1; ++j){
       eigen_beta(j) = overall_beta[j];
     }
     leaf_predictions = X * eigen_beta;
   } else {
-    // find ridge regression predictions
+    // find elastic net predictions
     Eigen::MatrixXd M(num_variables + 1, num_variables + 1);
     M.noalias() = X.transpose() * X;
 

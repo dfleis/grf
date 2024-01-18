@@ -142,13 +142,22 @@ ForestTrainer ll_regression_trainer(double split_lambda,
                        std::move(prediction_strategy));
 }
 
-ForestTrainer ll_regression_trainer2(double split_lambda,
+ForestTrainer ll_regression_trainer2(double alpha, 
+                                     double split_lambda,
                                      bool weight_penalty,
                                      const std::vector<double>& overall_beta,
                                      size_t ll_split_cutoff,
-                                     std::vector<size_t> ll_split_variables) {
-  std::unique_ptr<RelabelingStrategy> relabeling_strategy(new LLRegressionRelabelingStrategy2(split_lambda, weight_penalty, overall_beta,
-                                                                                              ll_split_cutoff, ll_split_variables));
+                                     std::vector<size_t> ll_split_variables,
+                                     double thresh,
+                                     int maxit) {
+  std::unique_ptr<RelabelingStrategy> relabeling_strategy(new LLRegressionRelabelingStrategy2(alpha,
+                                                                                              split_lambda, 
+                                                                                              weight_penalty, 
+                                                                                              overall_beta,
+                                                                                              ll_split_cutoff, 
+                                                                                              ll_split_variables,
+                                                                                              thresh,
+                                                                                              maxit));
   std::unique_ptr<SplittingRuleFactory> splitting_rule_factory(new RegressionSplittingRuleFactory());
   std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new RegressionPredictionStrategy());
   

@@ -67,10 +67,6 @@
 #include "driver.h"
 #include "internal.h"
  
-// TESTING
-#include <unistd.h>
-#include <iostream>
-
 using namespace Rcpp;
 
 inline void dummy_setpb(int) {} // disable the (optional) glmnet progress bar

@@ -24,21 +24,27 @@ namespace grf {
 
 class LLRegressionRelabelingStrategy2 final: public RelabelingStrategy {
 public:
-  LLRegressionRelabelingStrategy2(double split_lambda,
+  LLRegressionRelabelingStrategy2(double alpha,
+                                  double split_lambda,
                                   bool weight_penalty,
                                   const std::vector<double>& overall_beta,
                                   size_t ll_split_cutoff,
-                                  std::vector<size_t> ll_split_variables);
+                                  std::vector<size_t> ll_split_variables,
+                                  double thresh,
+                                  int maxit);
   bool relabel(
       const std::vector<size_t>& samples,
       const Data& data,
       Eigen::ArrayXXd& responses_by_sample) const;
 private:
+    double alpha;
     double split_lambda;
     bool weight_penalty;
     const std::vector<double>& overall_beta;
     size_t ll_split_cutoff;
     std::vector<size_t> ll_split_variables;
+    double thresh;
+    int maxit;
 };
 
 } // namespace grf
