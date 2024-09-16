@@ -132,4 +132,19 @@ void set_data(std::pair<std::vector<double>, std::vector<size_t>>& data, size_t 
   data.first.at(col * num_rows + row) = value;
 }
 
+// for elastic net tests (without glmnetpp)
+template <typename T> int sgn(T val) { // https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
+  return (T(0) < val) - (val < T(0));
+}
+// for elastic net tests (without glmnetpp)
+double soft_threshold(double z, double gamma) {
+  double out = sgn(z) * std::max(std::abs(z) - gamma, 0.0);
+  if (equal_doubles(out, 0.0, 1e-10)) {
+    return 0.0;
+  } else {
+    return out;
+  }
+}
+
+
 } // namespace grf

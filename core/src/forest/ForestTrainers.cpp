@@ -28,6 +28,7 @@
 #include "relabeling/MultiCausalRelabelingStrategyFP1.h"
 #include "relabeling/MultiCausalRelabelingStrategyFP2.h"
 #include "relabeling/LLRegressionRelabelingStrategy.h"
+#include "relabeling/LLRegressionRelabelingStrategy2.h"
 #include "relabeling/NoopRelabelingStrategy.h"
 #include "relabeling/MultiNoopRelabelingStrategy.h"
 #include "relabeling/QuantileRelabelingStrategy.h"
@@ -39,6 +40,8 @@
 #include "splitting/factory/SurvivalSplittingRuleFactory.h"
 #include "splitting/factory/CausalSurvivalSplittingRuleFactory.h"
 
+#include <stdio.h> // [[ TODO ]] Testing...
+ 
 namespace grf {
 
 ForestTrainer instrumental_trainer(double reduced_form_weight,
@@ -134,6 +137,30 @@ ForestTrainer ll_regression_trainer(double split_lambda,
   std::unique_ptr<SplittingRuleFactory> splitting_rule_factory(new RegressionSplittingRuleFactory());
   std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new RegressionPredictionStrategy());
 
+  return ForestTrainer(std::move(relabeling_strategy),
+                       std::move(splitting_rule_factory),
+                       std::move(prediction_strategy));
+}
+
+ForestTrainer ll_regression_trainer2(double alpha, 
+                                     double split_lambda,
+                                     bool weight_penalty,
+                                     const std::vector<double>& overall_beta,
+                                     size_t ll_split_cutoff,
+                                     std::vector<size_t> ll_split_variables,
+                                     double thresh,
+                                     int maxit) {
+  std::unique_ptr<RelabelingStrategy> relabeling_strategy(new LLRegressionRelabelingStrategy2(alpha,
+                                                                                              split_lambda, 
+                                                                                              weight_penalty, 
+                                                                                              overall_beta,
+                                                                                              ll_split_cutoff, 
+                                                                                              ll_split_variables,
+                                                                                              thresh,
+                                                                                              maxit));
+  std::unique_ptr<SplittingRuleFactory> splitting_rule_factory(new RegressionSplittingRuleFactory());
+  std::unique_ptr<OptimizedPredictionStrategy> prediction_strategy(new RegressionPredictionStrategy());
+  
   return ForestTrainer(std::move(relabeling_strategy),
                        std::move(splitting_rule_factory),
                        std::move(prediction_strategy));

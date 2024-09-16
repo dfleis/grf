@@ -131,6 +131,20 @@ validate_ll_vars <- function(linear.correction.variables, num.cols) {
   linear.correction.variables
 }
 
+validate_ll_elnet_alpha <- function(elnet.alpha) {
+  if (is.null(elnet.alpha) || !is.numeric(elnet.alpha) || length(elnet.alpha) > 1)
+    stop("elnet.alpha must be a scalar.")
+
+  if (elnet.alpha > 1) {
+    warning("elnet.alpha > 1; setting to 1")
+    elnet.alpha <- 1
+  } else if (elnet.alpha < 0) {
+    warning("elnet.alpha < 0; setting to 0")
+    elnet.alpha <- 0
+  }
+  elnet.alpha
+}
+
 validate_ll_lambda <- function(lambda) {
   if (lambda < 0) {
     stop("Lambda cannot be negative.")
@@ -310,3 +324,24 @@ validate_sandwich <- function(subset.weights) {
     }
   }
 }
+
+validate_ll_thresh <- function(thresh) {
+  if (thresh == 0) {
+    warning ("thresh = 0 is probably a bad idea.")
+  } else if (thresh < 0) {
+    stop("thresh cannot be negative.")
+  } else if (!is.numeric(thresh) || length(thresh) > 1) {
+    stop("thresh must be a scalar.")
+  }
+  thresh
+}
+validate_ll_maxit <- function(maxit) {
+  if (maxit < 0) {
+    stop("maxit cannot be negative.")
+  } else if (!is.numeric(maxit) || length(maxit) > 1) {
+    stop("maxit must be a positive integer.")
+  }
+  ceiling(maxit)
+}
+
+
