@@ -127,11 +127,13 @@ quantile_forest <- function(X, Y,
                ci.group.size = 1,
                compute.oob.predictions = compute.oob.predictions,
                num.threads = num.threads,
-               seed = seed)
+               seed = seed,
+               legacy.seed = get_legacy_seed())
 
   forest <- do.call.rcpp(quantile_train, c(data, args))
   class(forest) <- c("quantile_forest", "grf")
   forest[["seed"]] <- seed
+  forest[["num.threads"]] <- num.threads
   forest[["X.orig"]] <- X
   forest[["Y.orig"]] <- Y
   forest[["quantiles.orig"]] <- quantiles
@@ -153,7 +155,7 @@ quantile_forest <- function(X, Y,
 #'                matrix, and that the columns must appear in the same order.
 #' @param quantiles Vector of quantiles at which estimates are required. If NULL, the quantiles
 #'  used to train the forest is used. Default is NULL.
-#' @param num.threads Number of threads used in training. If set to NULL, the software
+#' @param num.threads Number of threads used in prediction. If set to NULL, the software
 #'                    automatically selects an appropriate amount.
 #' @param ... Additional arguments (currently ignored).
 #'

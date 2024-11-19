@@ -94,8 +94,13 @@
 #' @return A trained causal_survival_forest forest object.
 #'
 #' @references Cui, Yifan, Michael R. Kosorok, Erik Sverdrup, Stefan Wager, and Ruoqing Zhu.
-#'  "Estimating Heterogeneous Treatment Effects with Right-Censored Data via Causal Survival Forests."
+#'  "Estimating Heterogeneous Treatment Effects with Right-Censored Data via Causal Survival Forests".
 #'  Journal of the Royal Statistical Society: Series B, 85(2), 2023.
+#'
+#' @references Sverdrup, Erik, and Stefan Wager.
+#'  "Treatment Heterogeneity with Right-Censored Outcomes Using grf".
+#'  ASA Lifetime Data Science Newsletter, January 2024
+#'  (\href{https://arxiv.org/abs/2312.02482}{arXiv:2312.02482}).
 #'
 #' @examples
 #' \donttest{
@@ -368,11 +373,13 @@ causal_survival_forest <- function(X, Y, W, D,
                ci.group.size = ci.group.size,
                compute.oob.predictions = compute.oob.predictions,
                num.threads = num.threads,
-               seed = seed)
+               seed = seed,
+               legacy.seed = get_legacy_seed())
 
   forest <- do.call.rcpp(causal_survival_train, c(data, args))
   class(forest) <- c("causal_survival_forest", "grf")
   forest[["seed"]] <- seed
+  forest[["num.threads"]] <- num.threads
   forest[["_psi"]] <- psi
   forest[["X.orig"]] <- X
   forest[["Y.orig"]] <- Y
@@ -400,7 +407,7 @@ causal_survival_forest <- function(X, Y, W, D,
 #'                Xi using only trees that did not use the i-th training example). Note
 #'                that this matrix should have the number of columns as the training
 #'                matrix, and that the columns must appear in the same order.
-#' @param num.threads Number of threads used in training. If set to NULL, the software
+#' @param num.threads Number of threads used in prediction. If set to NULL, the software
 #'                    automatically selects an appropriate amount.
 #' @param estimate.variance Whether variance estimates for \eqn{\hat\tau(x)} are desired
 #'                          (for confidence intervals).

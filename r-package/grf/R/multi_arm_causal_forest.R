@@ -137,7 +137,7 @@
 #' abline(0, -1.5, col = "red")
 #' legend("topleft", c("B - A", "C - A"), col = c("black", "blue"), pch = 19)
 #'
-#' # The average treatment effect of the arms with "A" as baseline.
+#' # A doubly robust estimate (AIPW) of the average treatment effect of the arms.
 #' average_treatment_effect(mc.forest)
 #'
 #' # The conditional response surfaces mu_k(X) for a single outcome can be reconstructed from
@@ -294,12 +294,14 @@ multi_arm_causal_forest <- function(X, Y, W,
                compute.oob.predictions = compute.oob.predictions,
                method = method.flag,
                num.threads = num.threads,
-               seed = seed)
+               seed = seed,
+               legacy.seed = get_legacy_seed())
 
   forest <- do.call.rcpp(multi_causal_train, c(data, args))
 
   class(forest) <- c("multi_arm_causal_forest", "grf")
   forest[["seed"]] <- seed
+  forest[["num.threads"]] <- num.threads
   forest[["ci.group.size"]] <- ci.group.size
   forest[["X.orig"]] <- X
   forest[["Y.orig"]] <- Y
@@ -326,7 +328,7 @@ multi_arm_causal_forest <- function(X, Y, W,
 #'                Xi using only trees that did not use the i-th training example). Note
 #'                that this matrix should have the number of columns as the training
 #'                matrix, and that the columns must appear in the same order.
-#' @param num.threads Number of threads used in training. If set to NULL, the software
+#' @param num.threads Number of threads used in prediction. If set to NULL, the software
 #'                    automatically selects an appropriate amount.
 #' @param estimate.variance Whether variance estimates for \eqn{\hat\tau(x)} are desired
 #'                          (for confidence intervals). This option is currently

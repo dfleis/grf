@@ -140,7 +140,8 @@ ll_regression_forest <- function(X, Y,
                imbalance.penalty = imbalance.penalty,
                ci.group.size = ci.group.size,
                num.threads = num.threads,
-               seed = seed)
+               seed = seed,
+               legacy.seed = get_legacy_seed())
   if (enable.ll.split && ll.split.cutoff > 0) {
     # find overall beta
     J <- diag(ncol(X) + 1)
@@ -201,6 +202,7 @@ ll_regression_forest <- function(X, Y,
 
   class(forest) <- c("ll_regression_forest", "grf")
   forest[["seed"]] <- seed
+  forest[["num.threads"]] <- num.threads
   forest[["ci.group.size"]] <- ci.group.size
   forest[["X.orig"]] <- X
   forest[["Y.orig"]] <- Y
@@ -231,7 +233,7 @@ ll_regression_forest <- function(X, Y,
 #' @param ll.lambda Ridge penalty for local linear predictions. Defaults to NULL and will be cross-validated.
 #' @param ll.weight.penalty Option to standardize ridge penalty by covariance (TRUE),
 #'                            or penalize all covariates equally (FALSE). Defaults to FALSE.
-#' @param num.threads Number of threads used in training. If set to NULL, the software
+#' @param num.threads Number of threads used in prediction. If set to NULL, the software
 #'                    automatically selects an appropriate amount.
 #' @param estimate.variance Whether variance estimates for \eqn{\hat\tau(x)} are desired
 #'                          (for confidence intervals).

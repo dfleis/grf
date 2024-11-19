@@ -105,11 +105,13 @@ multi_regression_forest <- function(X, Y,
                imbalance.penalty = imbalance.penalty,
                compute.oob.predictions = compute.oob.predictions,
                num.threads = num.threads,
-               seed = seed)
+               seed = seed,
+               legacy.seed = get_legacy_seed())
 
   forest <- do.call.rcpp(multi_regression_train, c(data, args))
   class(forest) <- c("multi_regression_forest", "grf")
   forest[["seed"]] <- seed
+  forest[["num.threads"]] <- num.threads
   forest[["X.orig"]] <- X
   forest[["Y.orig"]] <- Y
   forest[["sample.weights"]] <- sample.weights
@@ -130,7 +132,7 @@ multi_regression_forest <- function(X, Y,
 #'                Xi using only trees that did not use the i-th training example). Note
 #'                that this matrix should have the number of columns as the training
 #'                matrix, and that the columns must appear in the same order.
-#' @param num.threads Number of threads used in training. If set to NULL, the software
+#' @param num.threads Number of threads used in prediction. If set to NULL, the software
 #'                    automatically selects an appropriate amount.
 #' @param drop If TRUE, coerce the prediction result to the lowest possible dimension. Default is FALSE.
 #' @param ... Additional arguments (currently ignored).

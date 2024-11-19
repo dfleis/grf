@@ -1,4 +1,6 @@
 /*-------------------------------------------------------------------------------
+  Copyright (c) 2024 GRF Contributors.
+
   This file is part of generalized random forest (grf).
 
   grf is free software: you can redistribute it and/or modify
@@ -48,7 +50,8 @@ Rcpp::List multi_causal_train(const Rcpp::NumericMatrix& train_matrix,
                               bool compute_oob_predictions,
                               int method_flag,
                               unsigned int num_threads,
-                              unsigned int seed) {
+                              unsigned int seed,
+                              bool legacy_seed) {
   size_t num_treatments = treatment_index.size();
   size_t num_outcomes = outcome_index.size();
   ForestTrainer trainer = multi_causal_trainer(num_treatments, num_outcomes, stabilize_splits, method_flag, gradient_weights);
@@ -61,7 +64,7 @@ Rcpp::List multi_causal_train(const Rcpp::NumericMatrix& train_matrix,
   }
 
   ForestOptions options(num_trees, ci_group_size, sample_fraction, mtry, min_node_size, honesty,
-      honesty_fraction, honesty_prune_leaves, alpha, imbalance_penalty, num_threads, seed, clusters, samples_per_cluster);
+      honesty_fraction, honesty_prune_leaves, alpha, imbalance_penalty, num_threads, seed, legacy_seed, clusters, samples_per_cluster);
   Forest forest = trainer.train(data, options);
 
   std::vector<Prediction> predictions;

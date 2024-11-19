@@ -27,7 +27,7 @@ This vignette gives a [brief overview](#a-grf-overview) of the GRF algorithm and
 
 * The [rank_average_treatment_effect](https://grf-labs.github.io/grf/reference/rank_average_treatment_effect.html) (*RATE*) as a generic tool to assess heterogeneity and the effectiveness of "targeting rules", as well as how the associated *TOC* curve can help identify segments of a population that respond differently to a treatment.
 
-* [policytree](https://github.com/grf-labs/policytree) to find a tree-based policy using the estimated CATEs.
+* [policytree](https://github.com/grf-labs/policytree) to find a tree-based policy.
 
 
 ## A grf overview
@@ -49,7 +49,7 @@ and interpret the estimated $\hat \tau$ as an estimate of the average treatment 
 
 Assumption 1) is an "identifying" assumption we have to live with, however 2) and 3) are modeling assumptions that we can question. Let's start with assumption 2): this is a strong parametric modeling assumption that requires the confounders to have a linear effect on the outcome, and that we should be able to relax by relying on semi-parametric statistics.
 
-**Relaxing assumption 1)**. We can instead posit the partially linear model:
+**Relaxing assumption 2)**. We can instead posit the partially linear model:
 
 $$
 Y_i = \tau W_i + f(X_i) + \varepsilon_i, \, \, E[\varepsilon_i | X_i, W_i] = 0,
@@ -403,11 +403,11 @@ qini.age
 
 *Some educational resources*
 
-* [Stanford video lectures on machine learning & causal inference](https://www.youtube.com/playlist?list=PLxq_lXOUlvQAoWZEqhRqHNezS30lI49G-)
+* [Machine Learning & Causal Inference: A Short Course](https://www.youtube.com/playlist?list=PLxq_lXOUlvQAoWZEqhRqHNezS30lI49G-) (video lectures)
 
-* [Online seminar on estimating heterogeneous treatment effects in R](https://youtu.be/YBbnCDRCcAI)
+* [Estimating Heterogeneous Treatment Effects in R](https://www.youtube.com/watch?v=YBbnCDRCcAI) (video tutorial)
 
-* [Lecture notes - causal inference PhD course at Stanford](http://web.stanford.edu/~swager/stats361.pdf)
+* [Causal Inference: A Statistical Learning Approach](https://web.stanford.edu/~swager/causal_inf_book.pdf) (textbook)
 
 <center><img src="https://raw.githubusercontent.com/grf-labs/grf/master/images/logo/grf_leaf_green.png" height="64"></center>
 
@@ -444,7 +444,7 @@ Yadlowsky, Steve, Scott Fleming, Nigam Shah, Emma Brunskill, and Stefan Wager. "
 
 Zeileis, Achim, Torsten Hothorn, and Kurt Hornik. "Model-based recursive partitioning." Journal of Computational and Graphical Statistics 17, no. 2 (2008): 492-514.
 
-[^1]: `grf` does not actually re-estimate a linear regression for each possible split point, that would be computationally infeasible. Instead, we estimate $\hat \tau$ *once* in the parent node, then use an approximation based on so-called "influence functions" to approximate how $\hat \tau$ would change if we moved a sample $i$ from the left to the right child.
+[^1]: `grf` does not actually re-estimate a linear regression for each possible split point, that would be computationally infeasible. Instead, `grf` estimates $\hat \tau$ *once* in the parent node, then use an approximation based on so-called "influence functions" to approximate how $\hat \tau$ would change if we moved a sample $i$ from the left to the right child. Algorithmically, the way this is operationalized is via a "pseudo-outcome" transformation detailed in the GRF paper.
 
 [^2]: For a broader discussion of how Robinson's transformation can be used to motivate a generic loss function for heterogeneous treatment effects estimation (the *R-learner*), as well as details on the role of $e(x)$ and $m(x)$, see Nie & Wager (2021).
 

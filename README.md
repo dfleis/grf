@@ -21,7 +21,7 @@ Other notes & to do lists:
 # generalized random forests <a href='https://grf-labs.github.io/grf/'><img src='https://raw.githubusercontent.com/grf-labs/grf/master/images/logo/grf_logo_wbg_cropped.png' align="right" height="120" /></a>
 
 [![CRANstatus](https://www.r-pkg.org/badges/version/grf)](https://cran.r-project.org/package=grf)
-![CRAN Downloads overall](http://cranlogs.r-pkg.org/badges/grand-total/grf)
+[![](https://cranlogs.r-pkg.org/badges/grand-total/grf)](https://cran.r-project.org/package=grf)
 [![Build Status](https://dev.azure.com/grf-labs/grf/_apis/build/status/grf-labs.grf?branchName=master)](https://dev.azure.com/grf-labs/grf/_build/latest?definitionId=2&branchName=master)
 
 A package for forest-based statistical estimation and inference. GRF provides non-parametric methods for heterogeneous treatment effects estimation (optionally using right-censored outcomes, multiple treatment arms or outcomes, or instrumental variables), as well as least-squares regression, quantile regression, and survival regression, all with support for missing covariates.
@@ -180,6 +180,14 @@ Imke Mayer, Erik Sverdrup, Tobias Gauss, Jean-Denis Moyer, Stefan Wager and Juli
 <i>Annals of Applied Statistics</i>, 14(3), 2020.
 [<a href="https://projecteuclid.org/euclid.aoas/1600454872">paper</a>,
 <a href="https://arxiv.org/pdf/1910.10624.pdf">arxiv</a>]
+
+Erik Sverdrup, Maria Petukhova, and Stefan Wager.
+<b>Estimating Treatment Effect Heterogeneity in Psychiatry: A Review and Tutorial with Causal Forests.</b> 2024.
+[<a href="https://arxiv.org/abs/2409.01578">arxiv</a>]
+
+Stefan Wager.
+<b>Causal Inference: A Statistical Learning Approach.</b> 2024.
+[<a href="https://web.stanford.edu/~swager/causal_inf_book.pdf">pdf</a>]
 
 Stefan Wager and Susan Athey.
 <b>Estimation and Inference of Heterogeneous Treatment Effects using Random Forests.</b>

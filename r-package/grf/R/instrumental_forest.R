@@ -215,7 +215,8 @@ instrumental_forest <- function(X, Y, W, Z,
               reduced.form.weight = reduced.form.weight,
               compute.oob.predictions = compute.oob.predictions,
               num.threads = num.threads,
-              seed = seed)
+              seed = seed,
+              legacy.seed = get_legacy_seed())
 
   tuning.output <- NULL
   if (!identical(tune.parameters, "none")) {
@@ -245,6 +246,7 @@ instrumental_forest <- function(X, Y, W, Z,
   forest <- do.call.rcpp(instrumental_train, c(data, args))
   class(forest) <- c("instrumental_forest", "grf")
   forest[["seed"]] <- seed
+  forest[["num.threads"]] <- num.threads
   forest[["ci.group.size"]] <- ci.group.size
   forest[["X.orig"]] <- X
   forest[["Y.orig"]] <- Y
@@ -273,7 +275,7 @@ instrumental_forest <- function(X, Y, W, Z,
 #'                Xi using only trees that did not use the i-th training example). Note
 #'                that this matrix should have the number of columns as the training
 #'                matrix, and that the columns must appear in the same order.
-#' @param num.threads Number of threads used in training. If set to NULL, the software
+#' @param num.threads Number of threads used in prediction. If set to NULL, the software
 #'                    automatically selects an appropriate amount.
 #' @param estimate.variance Whether variance estimates for \eqn{\hat\tau(x)} are desired
 #'                          (for confidence intervals).

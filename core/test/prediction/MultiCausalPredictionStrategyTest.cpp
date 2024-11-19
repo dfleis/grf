@@ -1,4 +1,6 @@
 /*-------------------------------------------------------------------------------
+  Copyright (c) 2024 GRF Contributors.
+
   This file is part of generalized random forest (grf).
 
   grf is free software: you can redistribute it and/or modify
@@ -38,8 +40,6 @@ TEST_CASE("multi causal predictions with one treatment is identical to causal fo
     {21, 22, 38, 41, 18},
     {21, 22, 38},
     {21, 22},
-    {87},
-    {87, 87},
     {101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
     117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130}
   };
@@ -80,8 +80,6 @@ TEST_CASE("multi causal predictions with one continuous treatment is identical t
     {21, 22, 38, 41, 18},
     {21, 22, 38},
     {21, 22},
-    {87},
-    {87, 87},
     {101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
     117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130}
   };
@@ -129,8 +127,6 @@ TEST_CASE("multi causal predictions with one continuous treatment and sample wei
     {21, 22, 38, 41, 18},
     {21, 22, 38},
     {21, 22},
-    {87},
-    {87, 87},
     {101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
     117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130}
   };
@@ -173,8 +169,6 @@ TEST_CASE("multi causal variance estimates with one continuous treatment is iden
     {},
     {21, 22, 38, 41, 18},
     {21, 22, 38},
-    {87},
-    {87, 87},
     {101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
     117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130}
   };
@@ -221,8 +215,6 @@ TEST_CASE("sample weighted multi causal variance estimates with one continuous t
     {},
     {21, 22, 38, 41, 18},
     {21, 22, 38},
-    {87},
-    {87, 87},
     {101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
     117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130}
   };

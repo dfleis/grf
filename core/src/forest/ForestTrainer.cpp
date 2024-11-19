@@ -1,4 +1,6 @@
 /*-------------------------------------------------------------------------------
+  Copyright (c) 2024 GRF Contributors.
+
   This file is part of generalized random forest (grf).
 
   grf is free software: you can redistribute it and/or modify
@@ -105,7 +107,12 @@ std::vector<std::unique_ptr<Tree>> ForestTrainer::train_batch(
   trees.reserve(num_trees * ci_group_size);
 
   for (size_t i = 0; i < num_trees; i++) {
-    uint tree_seed = udist(random_number_generator);
+    uint tree_seed;
+    if (options.get_legacy_seed()) {
+      tree_seed = udist(random_number_generator);
+    } else {
+      tree_seed = static_cast<uint>(options.get_random_seed() + start + i);
+    }
     RandomSampler sampler(tree_seed, options.get_sampling_options());
 
     if (ci_group_size == 1) {

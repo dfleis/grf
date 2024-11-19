@@ -16,6 +16,8 @@ navbar:
         href: articles/categorical_inputs.html
       - text: "Causal forest with time-to-event data"
         href: articles/survival.html
+      - text: "Cross-fold validation of heterogeneity"
+        href: articles/rate_cv.html
       - text: "Estimating ATEs on a new target population"
         href: articles/ate_transport.html
       - text: "Estimating conditional means"
@@ -119,3 +121,7 @@ reference:
       - print.grf_tree
       - print.rank_average_treatment_effect
       - print.tuning_output
+
+  - title: grf package options
+    contents:
+      - grf_options
