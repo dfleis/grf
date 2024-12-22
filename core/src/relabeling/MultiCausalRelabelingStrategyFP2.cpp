@@ -75,7 +75,7 @@ bool MultiCausalRelabelingStrategyFP2::relabel(
   /**
    * Approximate fixed-point pseudo-outcomes for heterogeneous treatment effect estimation,
    * using one-step gradient descent update starting from the origin and taking the exact
-   * line search step size. See the description of 'fp2' in https://arxiv.org/abs/2306.11908
+   * line search step size. See the description of 'fpt2' in https://arxiv.org/abs/2306.11908
    */
   Eigen::MatrixXd grad = W_centered.transpose() * (weights.asDiagonal() * Y_centered);
   Eigen::MatrixXd Wgrad = W_centered * grad;

@@ -30,7 +30,7 @@ namespace grf {
  * TO DO... some documentation in the same style as the description found in the original
  * gradient-based MultiCausalRelabelingStrategy.h
  * Approximate fixed-point pseudo-outcome calculation for heterogeneous treatment effect
- * estimation. See algorithm 'fp2' in https://arxiv.org/abs/2306.11908
+ * estimation. See 'fpt2' in https://arxiv.org/abs/2306.11908
  */
 class MultiCausalRelabelingStrategyFP2 final: public RelabelingStrategy {
 public:

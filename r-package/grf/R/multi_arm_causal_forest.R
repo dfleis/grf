@@ -96,8 +96,8 @@
 #'                      currently only supported for univariate outcomes Y).
 #' @param compute.oob.predictions Whether OOB predictions on training set should be precomputed. Default is TRUE.
 #' @param method Character string specifying the pseudo-outcome calculation method: "grad" specifies pseudo-outcomes obtained
-#' via the original gradient tree algorithm, "fp1" specifies pseudo-outcomes obtained via the exact fixed-point tree algorithm,
-#' "fp2" specifies pseudo-outcomes obtained via the approximate fixed-point tree algorithm. Details regarding the fixed-point
+#' via the original gradient tree algorithm, "fpt1" specifies pseudo-outcomes obtained via the exact fixed-point tree algorithm,
+#' "fpt2" specifies pseudo-outcomes obtained via the approximate fixed-point tree algorithm. Details regarding the fixed-point
 #' tree algorithm, alongside the exact and approximate implementations designed for heterogeneous treatment effect estimation,
 #' can be found at https://arxiv.org/abs/2306.11908.
 #' @param num.threads Number of threads used in training. By default, the number of threads is set
@@ -189,7 +189,7 @@ multi_arm_causal_forest <- function(X, Y, W,
                                     stabilize.splits = TRUE,
                                     ci.group.size = 2,
                                     compute.oob.predictions = TRUE,
-                                    method = c("grad", "fp1", "fp2"),
+                                    method = c("grad", "fpt1", "fpt2"),
                                     num.threads = NULL,
                                     seed = runif(1, 0, .Machine$integer.max)) {
   has.missing.values <- validate_X(X, allow.na = TRUE)
@@ -213,9 +213,9 @@ multi_arm_causal_forest <- function(X, Y, W,
   if (nlevels(W) != nlevels(droplevels(W))) {
     warning("The treatment vector W contains unused levels (see `droplevels()` to drop unused levels).")
   }
-  method <- match.arg(method, choices = c("grad", "fp1", "fp2"))
-  if (method %in% c("fp1","fp2") & ncol(Y) > 1) stop("Multivariate Y not yet supported by the fixed-point methods.")
-  method.flag <- switch(method, "grad" = 1, "fp1" = 2, "fp2" = 3)
+  method <- match.arg(method, choices = c("grad", "fpt1", "fpt2"))
+  if (method %in% c("fpt1","fpt2") & ncol(Y) > 1) stop("Multivariate Y not yet supported for fixed-point tree methods.")
+  method.flag <- switch(method, "grad" = 1, "fpt1" = 2, "fpt2" = 3)
 
   args.orthog <- list(X = X,
                       num.trees = max(50, num.trees / 4),
@@ -434,7 +434,7 @@ predict.multi_arm_causal_forest <- function(object,
   forest.short <- object[-which(names(object) == "X.orig")]
   X <- object[["X.orig"]]
   train.data <- create_train_matrices(X)
-  method.flag <- switch(object[["method"]], "grad" = 1, "fp1" = 2, "fp2" = 3)
+  method.flag <- switch(object[["method"]], "grad" = 1, "fpt1" = 2, "fpt2" = 3)
 
   args <- list(forest.object = forest.short,
                num.outcomes = num.outcomes,

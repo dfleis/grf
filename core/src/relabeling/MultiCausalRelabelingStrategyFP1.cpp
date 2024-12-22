@@ -81,7 +81,7 @@ bool MultiCausalRelabelingStrategyFP1::relabel(
 
   /**
    * Exact fixed-point pseudo-outcomes for heterogeneous treatment effect estimation. See the
-   * description of 'fp1' in https://arxiv.org/abs/2306.11908
+   * description of 'fpt1' in https://arxiv.org/abs/2306.11908
    */
   Eigen::MatrixXd beta = WW_bar.ldlt().solve(W_centered.transpose() * (weights.asDiagonal() * Y_centered));
   Eigen::MatrixXd residual = Y_centered - W_centered * beta; // [num_samples X num_outcomes]
